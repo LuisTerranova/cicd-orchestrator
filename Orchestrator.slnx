@@ -1,9 +1,11 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Orchestrator.Domain/Orchestrator.Domain.csproj" />
+    <Project Path="src/Orchestrator.Application/Orchestrator.Application.csproj" />
+    <Project Path="src/Orchestrator.Infrastructure/Orchestrator.Infrastructure.csproj" />
+    <Project Path="src/Orchestrator.Api/Orchestrator.Api.csproj" />
     <Project Path="src/Orchestrator.Contracts/Orchestrator.Contracts.csproj" />
-    <Project Path="src/Orchestrator.Front/Orchestrator.Front.csproj" />
     <Project Path="src/Orchestrator.Runner/Orchestrator.Runner.csproj" />
-    <Project Path="src/Orchestrator.Server/Orchestrator.Server.csproj" />
-    <Project Path="src/Orchestrator.Shared/Orchestrator.Shared.csproj" />
+    <Project Path="src/Orchestrator.Front/Orchestrator.Front.csproj" />
   </Folder>
 </Solution>

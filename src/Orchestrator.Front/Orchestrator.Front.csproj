@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Orchestrator.Shared\Orchestrator.Shared.csproj" />
+    <ProjectReference Include="..\Orchestrator.Contracts\Orchestrator.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

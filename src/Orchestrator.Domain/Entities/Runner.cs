@@ -1,12 +1,11 @@
 using Orchestrator.Domain.Events;
-using Orchestrator.Domain.Exceptions;
 using Orchestrator.Domain.ValueObjects;
 
 namespace Orchestrator.Domain.Entities;
 
 public class Runner : Entity
 {
-    public required string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
     public RunnerStatus Status { get; private set; }
     public string[] Labels { get; private set; } = [];
     public string Os { get; private set; } = string.Empty;
@@ -16,19 +15,27 @@ public class Runner : Entity
 
     private Runner() { }
 
-    public static Runner Create(string name, string[] labels, string os, string arch) { }
+    public static Runner Create(string name, string[] labels, string os, string arch)
+        => throw new NotImplementedException();
 
-    public void Register() { }
+    public void Register()
+        => throw new NotImplementedException();
 
-    public void GoBusy() { }
+    public void GoBusy()
+        => throw new NotImplementedException();
 
-    public void GoIdle() { }
+    public void GoIdle()
+        => throw new NotImplementedException();
 
-    public void Disconnect() { }
+    public void Disconnect()
+        => throw new NotImplementedException();
 
-    public void Revoke() { }
+    public void Revoke()
+        => throw new NotImplementedException();
 
-    public void Heartbeat() { }
+    public void Heartbeat()
+        => throw new NotImplementedException();
 
-    public bool HasLabel(string requiredLabel) { }
+    public bool HasLabel(string requiredLabel)
+        => throw new NotImplementedException();
 }

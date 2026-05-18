@@ -1,11 +1,9 @@
-using Orchestrator.Domain.Exceptions;
-
 namespace Orchestrator.Domain.Entities;
 
 public class Pipeline : Entity
 {
-    public required string Name { get; private set; }
-    public required string Repo { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Repo { get; private set; } = string.Empty;
     public string Branch { get; private set; } = string.Empty;
     public string YamlPath { get; private set; } = string.Empty;
     public DateTime CreatedAt { get; private set; }
@@ -15,9 +13,12 @@ public class Pipeline : Entity
 
     private Pipeline() { }
 
-    public static Pipeline Create(string name, string repo, string branch = "main", string yamlPath = "") { }
+    public static Pipeline Create(string name, string repo, string branch = "main", string yamlPath = "")
+        => throw new NotImplementedException();
 
-    public Build TriggerBuild(string triggerEvent, string commitSha, int priority = 0) { }
+    public Build TriggerBuild(string triggerEvent, string commitSha, int priority = 0)
+        => throw new NotImplementedException();
 
-    public void UpdateConfig(string branch, string yamlPath) { }
+    public void UpdateConfig(string branch, string yamlPath)
+        => throw new NotImplementedException();
 }

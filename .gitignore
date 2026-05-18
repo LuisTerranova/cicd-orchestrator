@@ -33,3 +33,6 @@ Thumbs.db
 credentials.json
 *.pfx
 *.cert
+
+# Graphify generated artifacts
+**/graphify-out/

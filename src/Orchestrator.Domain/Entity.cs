@@ -8,7 +8,9 @@ public abstract class Entity
 
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-    protected void AddDomainEvent(IDomainEvent domainEvent) { }
+    protected void AddDomainEvent(IDomainEvent domainEvent)
+        => throw new NotImplementedException();
 
-    public void ClearDomainEvents() { }
+    public void ClearDomainEvents()
+        => throw new NotImplementedException();
 }
