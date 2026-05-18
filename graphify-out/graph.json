@@ -1,0 +1,1344 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {
+    "hyperedges": [
+      {
+        "id": "message_contracts",
+        "label": "Message Contracts",
+        "nodes": [
+          "JobCompleted_cs_JobCompleted",
+          "JobCancelled_cs_JobCancelled",
+          "JobQueued_cs_JobQueued"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.9,
+        "source_file": "src/Orchestrator.Contracts/Messages"
+      },
+      {
+        "id": "server_endpoints",
+        "label": "Server Endpoints",
+        "nodes": [
+          "BuildsEndpoints",
+          "RunnersEndpoints",
+          "LogsEndpoints",
+          "WebhooksEndpoints",
+          "HealthEndpoints"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "src/Orchestrator.Server/Program.cs"
+      },
+      {
+        "id": "domain_models",
+        "label": "Domain Models",
+        "nodes": [
+          "Pipeline",
+          "Build",
+          "Job",
+          "Runner",
+          "Artifact",
+          "LogMetadata"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.9,
+        "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs"
+      },
+      {
+        "id": "status_enums",
+        "label": "Status Enums",
+        "nodes": [
+          "BuildStatus",
+          "JobStatus",
+          "RunnerStatus"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.9,
+        "source_file": "src/Orchestrator.Server/Models"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "label": "JobCompleted.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": "L1",
+      "id": "orchestrator_contracts_messages_jobcompleted_cs",
+      "community": 18,
+      "norm_label": "jobcompleted.cs"
+    },
+    {
+      "label": "JobCancelled.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Contracts/Messages/JobCancelled.cs",
+      "source_location": "L1",
+      "id": "orchestrator_contracts_messages_jobcancelled_cs",
+      "community": 19,
+      "norm_label": "jobcancelled.cs"
+    },
+    {
+      "label": "JobQueued.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": "L1",
+      "id": "orchestrator_contracts_messages_jobqueued_cs",
+      "community": 20,
+      "norm_label": "jobqueued.cs"
+    },
+    {
+      "label": "Program.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Program.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_program_cs",
+      "community": 21,
+      "norm_label": "program.cs"
+    },
+    {
+      "label": "OrchestratorDbContext.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_data_orchestratordbcontext_cs",
+      "community": 2,
+      "norm_label": "orchestratordbcontext.cs"
+    },
+    {
+      "label": "OrchestratorDbContext",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": "L6",
+      "id": "data_orchestratordbcontext_orchestratordbcontext",
+      "community": 2,
+      "norm_label": "orchestratordbcontext"
+    },
+    {
+      "label": "DbContext",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "dbcontext",
+      "community": 2,
+      "norm_label": "dbcontext"
+    },
+    {
+      "label": "RunnerStatus.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/RunnerStatus.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_runnerstatus_cs",
+      "community": 22,
+      "norm_label": "runnerstatus.cs"
+    },
+    {
+      "label": "Artifact.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Artifact.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_artifact_cs",
+      "community": 10,
+      "norm_label": "artifact.cs"
+    },
+    {
+      "label": "Artifact",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Artifact.cs",
+      "source_location": "L3",
+      "id": "models_artifact_artifact",
+      "community": 10,
+      "norm_label": "artifact"
+    },
+    {
+      "label": "LogMetadata.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/LogMetadata.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_logmetadata_cs",
+      "community": 11,
+      "norm_label": "logmetadata.cs"
+    },
+    {
+      "label": "LogMetadata",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/LogMetadata.cs",
+      "source_location": "L3",
+      "id": "models_logmetadata_logmetadata",
+      "community": 11,
+      "norm_label": "logmetadata"
+    },
+    {
+      "label": "BuildStatus.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/BuildStatus.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_buildstatus_cs",
+      "community": 23,
+      "norm_label": "buildstatus.cs"
+    },
+    {
+      "label": "Pipeline.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Pipeline.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_pipeline_cs",
+      "community": 12,
+      "norm_label": "pipeline.cs"
+    },
+    {
+      "label": "Pipeline",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Pipeline.cs",
+      "source_location": "L3",
+      "id": "models_pipeline_pipeline",
+      "community": 12,
+      "norm_label": "pipeline"
+    },
+    {
+      "label": "JobStatus.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/JobStatus.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_jobstatus_cs",
+      "community": 24,
+      "norm_label": "jobstatus.cs"
+    },
+    {
+      "label": "Build.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Build.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_build_cs",
+      "community": 13,
+      "norm_label": "build.cs"
+    },
+    {
+      "label": "Build",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Build.cs",
+      "source_location": "L3",
+      "id": "models_build_build",
+      "community": 13,
+      "norm_label": "build"
+    },
+    {
+      "label": "Runner.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Runner.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_runner_cs",
+      "community": 14,
+      "norm_label": "runner.cs"
+    },
+    {
+      "label": "Runner",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Runner.cs",
+      "source_location": "L3",
+      "id": "models_runner_runner",
+      "community": 14,
+      "norm_label": "runner"
+    },
+    {
+      "label": "Job.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Job.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_models_job_cs",
+      "community": 15,
+      "norm_label": "job.cs"
+    },
+    {
+      "label": "Job",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Models/Job.cs",
+      "source_location": "L3",
+      "id": "models_job_job",
+      "community": 15,
+      "norm_label": "job"
+    },
+    {
+      "label": "WebhookSignatureService.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Services/WebhookSignatureService.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_services_webhooksignatureservice_cs",
+      "community": 16,
+      "norm_label": "webhooksignatureservice.cs"
+    },
+    {
+      "label": "WebhookSignatureService",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Services/WebhookSignatureService.cs",
+      "source_location": "L3",
+      "id": "services_webhooksignatureservice_webhooksignatureservice",
+      "community": 16,
+      "norm_label": "webhooksignatureservice"
+    },
+    {
+      "label": "RunnerTokenService.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Services/RunnerTokenService.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_services_runnertokenservice_cs",
+      "community": 17,
+      "norm_label": "runnertokenservice.cs"
+    },
+    {
+      "label": "RunnerTokenService",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Services/RunnerTokenService.cs",
+      "source_location": "L3",
+      "id": "services_runnertokenservice_runnertokenservice",
+      "community": 17,
+      "norm_label": "runnertokenservice"
+    },
+    {
+      "label": "LogsEndpoints.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_endpoints_logsendpoints_cs",
+      "community": 3,
+      "norm_label": "logsendpoints.cs"
+    },
+    {
+      "label": "LogsEndpoints",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs",
+      "source_location": "L3",
+      "id": "endpoints_logsendpoints_logsendpoints",
+      "community": 3,
+      "norm_label": "logsendpoints"
+    },
+    {
+      "label": ".MapLogsEndpoints()",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs",
+      "source_location": "L5",
+      "id": "endpoints_logsendpoints_logsendpoints_maplogsendpoints",
+      "community": 3,
+      "norm_label": ".maplogsendpoints()"
+    },
+    {
+      "label": "BuildsEndpoints.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_endpoints_buildsendpoints_cs",
+      "community": 4,
+      "norm_label": "buildsendpoints.cs"
+    },
+    {
+      "label": "BuildsEndpoints",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs",
+      "source_location": "L3",
+      "id": "endpoints_buildsendpoints_buildsendpoints",
+      "community": 4,
+      "norm_label": "buildsendpoints"
+    },
+    {
+      "label": ".MapBuildsEndpoints()",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs",
+      "source_location": "L5",
+      "id": "endpoints_buildsendpoints_buildsendpoints_mapbuildsendpoints",
+      "community": 4,
+      "norm_label": ".mapbuildsendpoints()"
+    },
+    {
+      "label": "RunnersEndpoints.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_endpoints_runnersendpoints_cs",
+      "community": 5,
+      "norm_label": "runnersendpoints.cs"
+    },
+    {
+      "label": "RunnersEndpoints",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": "L3",
+      "id": "endpoints_runnersendpoints_runnersendpoints",
+      "community": 5,
+      "norm_label": "runnersendpoints"
+    },
+    {
+      "label": ".MapRunnersEndpoints()",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": "L5",
+      "id": "endpoints_runnersendpoints_runnersendpoints_maprunnersendpoints",
+      "community": 5,
+      "norm_label": ".maprunnersendpoints()"
+    },
+    {
+      "label": "WebhooksEndpoints.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_endpoints_webhooksendpoints_cs",
+      "community": 6,
+      "norm_label": "webhooksendpoints.cs"
+    },
+    {
+      "label": "WebhooksEndpoints",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": "L3",
+      "id": "endpoints_webhooksendpoints_webhooksendpoints",
+      "community": 6,
+      "norm_label": "webhooksendpoints"
+    },
+    {
+      "label": ".MapWebhooksEndpoints()",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": "L5",
+      "id": "endpoints_webhooksendpoints_webhooksendpoints_mapwebhooksendpoints",
+      "community": 6,
+      "norm_label": ".mapwebhooksendpoints()"
+    },
+    {
+      "label": "HealthEndpoints.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs",
+      "source_location": "L1",
+      "id": "orchestrator_server_endpoints_healthendpoints_cs",
+      "community": 7,
+      "norm_label": "healthendpoints.cs"
+    },
+    {
+      "label": "HealthEndpoints",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs",
+      "source_location": "L3",
+      "id": "endpoints_healthendpoints_healthendpoints",
+      "community": 7,
+      "norm_label": "healthendpoints"
+    },
+    {
+      "label": ".MapHealthEndpoints()",
+      "file_type": "code",
+      "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs",
+      "source_location": "L5",
+      "id": "endpoints_healthendpoints_healthendpoints_maphealthendpoints",
+      "community": 7,
+      "norm_label": ".maphealthendpoints()"
+    },
+    {
+      "label": "Program.cs",
+      "file_type": "code",
+      "source_file": "Orchestrator.Runner/Program.cs",
+      "source_location": "L1",
+      "id": "orchestrator_runner_program_cs",
+      "community": 25,
+      "norm_label": "program.cs"
+    },
+    {
+      "label": "JobCompleted",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobCompleted_cs_JobCompleted",
+      "community": 8,
+      "norm_label": "jobcompleted"
+    },
+    {
+      "label": "JobStepResult",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobCompleted_cs_JobStepResult",
+      "community": 8,
+      "norm_label": "jobstepresult"
+    },
+    {
+      "label": "ArtifactInfo",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobCompleted_cs_ArtifactInfo",
+      "community": 8,
+      "norm_label": "artifactinfo"
+    },
+    {
+      "label": "JobCancelled",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCancelled.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobCancelled_cs_JobCancelled",
+      "community": 0,
+      "norm_label": "jobcancelled"
+    },
+    {
+      "label": "JobQueued",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobQueued_cs_JobQueued",
+      "community": 9,
+      "norm_label": "jobqueued"
+    },
+    {
+      "label": "JobStep",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobQueued_cs_JobStep",
+      "community": 9,
+      "norm_label": "jobstep"
+    },
+    {
+      "label": "RegistryAuth",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobQueued_cs_RegistryAuth",
+      "community": 9,
+      "norm_label": "registryauth"
+    },
+    {
+      "label": "Server Program",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Server_Program",
+      "community": 1,
+      "norm_label": "server program"
+    },
+    {
+      "label": "OrchestratorDbContext",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "OrchestratorDbContext",
+      "community": 0,
+      "norm_label": "orchestratordbcontext"
+    },
+    {
+      "label": "RunnerStatus",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/RunnerStatus.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "RunnerStatus",
+      "community": 0,
+      "norm_label": "runnerstatus"
+    },
+    {
+      "label": "Artifact",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/Artifact.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Artifact",
+      "community": 0,
+      "norm_label": "artifact"
+    },
+    {
+      "label": "LogMetadata",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/LogMetadata.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "LogMetadata",
+      "community": 0,
+      "norm_label": "logmetadata"
+    },
+    {
+      "label": "BuildStatus",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/BuildStatus.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "BuildStatus",
+      "community": 0,
+      "norm_label": "buildstatus"
+    },
+    {
+      "label": "Pipeline",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/Pipeline.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Pipeline",
+      "community": 0,
+      "norm_label": "pipeline"
+    },
+    {
+      "label": "JobStatus",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/JobStatus.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "JobStatus",
+      "community": 0,
+      "norm_label": "jobstatus"
+    },
+    {
+      "label": "Build",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/Build.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Build",
+      "community": 0,
+      "norm_label": "build"
+    },
+    {
+      "label": "Runner",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/Runner.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Runner",
+      "community": 0,
+      "norm_label": "runner"
+    },
+    {
+      "label": "Job",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Models/Job.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Job",
+      "community": 0,
+      "norm_label": "job"
+    },
+    {
+      "label": "WebhookSignatureService",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Services/WebhookSignatureService.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "WebhookSignatureService",
+      "community": 1,
+      "norm_label": "webhooksignatureservice"
+    },
+    {
+      "label": "RunnerTokenService",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Services/RunnerTokenService.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "RunnerTokenService",
+      "community": 1,
+      "norm_label": "runnertokenservice"
+    },
+    {
+      "label": "LogsEndpoints",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Endpoints/LogsEndpoints.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "LogsEndpoints",
+      "community": 1,
+      "norm_label": "logsendpoints"
+    },
+    {
+      "label": "BuildsEndpoints",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Endpoints/BuildsEndpoints.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "BuildsEndpoints",
+      "community": 1,
+      "norm_label": "buildsendpoints"
+    },
+    {
+      "label": "RunnersEndpoints",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "RunnersEndpoints",
+      "community": 1,
+      "norm_label": "runnersendpoints"
+    },
+    {
+      "label": "WebhooksEndpoints",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "WebhooksEndpoints",
+      "community": 1,
+      "norm_label": "webhooksendpoints"
+    },
+    {
+      "label": "HealthEndpoints",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Server/Endpoints/HealthEndpoints.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "HealthEndpoints",
+      "community": 1,
+      "norm_label": "healthendpoints"
+    },
+    {
+      "label": "Runner Program",
+      "file_type": "code",
+      "source_file": "src/Orchestrator.Runner/Program.cs",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "Runner_Program",
+      "community": 26,
+      "norm_label": "runner program"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "orchestrator_server_data_orchestratordbcontext_cs",
+      "target": "data_orchestratordbcontext_orchestratordbcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "data_orchestratordbcontext_orchestratordbcontext",
+      "target": "dbcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Models/Artifact.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_models_artifact_cs",
+      "target": "models_artifact_artifact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Models/LogMetadata.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_models_logmetadata_cs",
+      "target": "models_logmetadata_logmetadata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Models/Pipeline.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_models_pipeline_cs",
+      "target": "models_pipeline_pipeline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Models/Build.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_models_build_cs",
+      "target": "models_build_build",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Models/Runner.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_models_runner_cs",
+      "target": "models_runner_runner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Models/Job.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_models_job_cs",
+      "target": "models_job_job",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Services/WebhookSignatureService.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_services_webhooksignatureservice_cs",
+      "target": "services_webhooksignatureservice_webhooksignatureservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Services/RunnerTokenService.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_services_runnertokenservice_cs",
+      "target": "services_runnertokenservice_runnertokenservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_endpoints_logsendpoints_cs",
+      "target": "endpoints_logsendpoints_logsendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "endpoints_logsendpoints_logsendpoints",
+      "target": "endpoints_logsendpoints_logsendpoints_maplogsendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_endpoints_buildsendpoints_cs",
+      "target": "endpoints_buildsendpoints_buildsendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "endpoints_buildsendpoints_buildsendpoints",
+      "target": "endpoints_buildsendpoints_buildsendpoints_mapbuildsendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_endpoints_runnersendpoints_cs",
+      "target": "endpoints_runnersendpoints_runnersendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "endpoints_runnersendpoints_runnersendpoints",
+      "target": "endpoints_runnersendpoints_runnersendpoints_maprunnersendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_endpoints_webhooksendpoints_cs",
+      "target": "endpoints_webhooksendpoints_webhooksendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "endpoints_webhooksendpoints_webhooksendpoints",
+      "target": "endpoints_webhooksendpoints_webhooksendpoints_mapwebhooksendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "orchestrator_server_endpoints_healthendpoints_cs",
+      "target": "endpoints_healthendpoints_healthendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "endpoints_healthendpoints_healthendpoints",
+      "target": "endpoints_healthendpoints_healthendpoints_maphealthendpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobCompleted_cs_JobCompleted",
+      "target": "JobCompleted_cs_JobStepResult"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobCompleted_cs_JobCompleted",
+      "target": "JobCompleted_cs_ArtifactInfo"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobCompleted_cs_JobCompleted",
+      "target": "Job"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobCompleted_cs_ArtifactInfo",
+      "target": "Artifact"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobCancelled.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobCancelled_cs_JobCancelled",
+      "target": "Job"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobQueued_cs_JobQueued",
+      "target": "JobQueued_cs_JobStep"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobQueued_cs_JobQueued",
+      "target": "JobQueued_cs_RegistryAuth"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "JobQueued_cs_JobQueued",
+      "target": "Job"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Server_Program",
+      "target": "OrchestratorDbContext"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Server_Program",
+      "target": "BuildsEndpoints"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Server_Program",
+      "target": "RunnersEndpoints"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Server_Program",
+      "target": "LogsEndpoints"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Server_Program",
+      "target": "WebhooksEndpoints"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Server_Program",
+      "target": "HealthEndpoints"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "OrchestratorDbContext",
+      "target": "Pipeline"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "OrchestratorDbContext",
+      "target": "Build"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "OrchestratorDbContext",
+      "target": "Job"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "OrchestratorDbContext",
+      "target": "Runner"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "OrchestratorDbContext",
+      "target": "LogMetadata"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "OrchestratorDbContext",
+      "target": "Artifact"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Runner.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Runner",
+      "target": "RunnerStatus"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Artifact.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Artifact",
+      "target": "Build"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/LogMetadata.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "LogMetadata",
+      "target": "Job"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Build.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Build",
+      "target": "BuildStatus"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Pipeline.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Pipeline",
+      "target": "Build"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Job.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Job",
+      "target": "JobStatus"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Job.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Job",
+      "target": "Build"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Models/Runner.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "Runner",
+      "target": "Job"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "src/Orchestrator.Server/Endpoints/WebhooksEndpoints.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "WebhooksEndpoints",
+      "target": "WebhookSignatureService"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "src/Orchestrator.Server/Endpoints/RunnersEndpoints.cs",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "RunnersEndpoints",
+      "target": "RunnerTokenService"
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "message_contracts",
+      "label": "Message Contracts",
+      "nodes": [
+        "JobCompleted_cs_JobCompleted",
+        "JobCancelled_cs_JobCancelled",
+        "JobQueued_cs_JobQueued"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/Orchestrator.Contracts/Messages"
+    },
+    {
+      "id": "server_endpoints",
+      "label": "Server Endpoints",
+      "nodes": [
+        "BuildsEndpoints",
+        "RunnersEndpoints",
+        "LogsEndpoints",
+        "WebhooksEndpoints",
+        "HealthEndpoints"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/Orchestrator.Server/Program.cs"
+    },
+    {
+      "id": "domain_models",
+      "label": "Domain Models",
+      "nodes": [
+        "Pipeline",
+        "Build",
+        "Job",
+        "Runner",
+        "Artifact",
+        "LogMetadata"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs"
+    },
+    {
+      "id": "status_enums",
+      "label": "Status Enums",
+      "nodes": [
+        "BuildStatus",
+        "JobStatus",
+        "RunnerStatus"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/Orchestrator.Server/Models"
+    }
+  ]
+}

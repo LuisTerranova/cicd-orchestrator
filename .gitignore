@@ -1,0 +1,35 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+*.userosscache
+*.DotSettings.user
+*.DotSettings
+.vs/
+
+# .env files (contain secrets like connection strings, API keys)
+.env
+*.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+**/bin/**
+**/obj/**
+**/node_modules/
+**/wwwroot/dist/
+
+# Secrets
+credentials.json
+*.pfx
+*.cert

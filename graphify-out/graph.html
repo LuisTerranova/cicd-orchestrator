@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out/graph.html</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: #1a1a2e; border-left: 1px solid #2a2a4e; display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid #2a2a4e; }
+  #search { width: 100%; background: #0f0f1a; border: 1px solid #3a3a5e; color: #e0e0e0; padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid #2a2a4e; display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: #2a2a4e; }
+  #info-panel { padding: 14px; border-bottom: 1px solid #2a2a4e; min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: #ccc; line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: #e0e0e0; }
+  #info-content .empty { color: #555; font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid #333; }
+  .neighbor-link:hover { background: #2a2a4e; }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: #2a2a4e; padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: #666; font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid #2a2a4e; font-size: 11px; color: #555; }
+  #legend-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0; }
+  #legend-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: #aaa; user-select: none; }
+  #legend-controls label:hover { color: #e0e0e0; }
+  .legend-cb, #select-all-cb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; border: 1.5px solid #3a3a5e; border-radius: 3px; background: #0f0f1a; cursor: pointer; position: relative; flex-shrink: 0; }
+  .legend-cb:checked, #select-all-cb:checked { background: #4E79A7; border-color: #4E79A7; }
+  .legend-cb:checked::after, #select-all-cb:checked::after { content: ''; position: absolute; left: 3.5px; top: 1px; width: 4px; height: 7px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  #select-all-cb:indeterminate { background: #4E79A7; border-color: #4E79A7; }
+  #select-all-cb:indeterminate::after { content: ''; position: absolute; left: 2px; top: 5px; width: 8px; height: 2px; background: #fff; border: none; transform: none; }
+</style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend-controls">
+      <label><input type="checkbox" id="select-all-cb" checked onchange="toggleAllCommunities(!this.checked)">Select All</label>
+    </div>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">68 nodes &middot; 50 edges &middot; 27 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "orchestrator_contracts_messages_jobcompleted_cs", "label": "JobCompleted.cs", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "JobCompleted.cs", "community": 18, "community_name": "JobCompleted Contract File", "source_file": "Orchestrator.Contracts/Messages/JobCompleted.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_contracts_messages_jobcancelled_cs", "label": "JobCancelled.cs", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "JobCancelled.cs", "community": 19, "community_name": "JobCancelled Contract File", "source_file": "Orchestrator.Contracts/Messages/JobCancelled.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_contracts_messages_jobqueued_cs", "label": "JobQueued.cs", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "JobQueued.cs", "community": 20, "community_name": "JobQueued Contract File", "source_file": "Orchestrator.Contracts/Messages/JobQueued.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_server_program_cs", "label": "Program.cs", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Program.cs", "community": 21, "community_name": "Server Program Entry", "source_file": "Orchestrator.Server/Program.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_server_data_orchestratordbcontext_cs", "label": "OrchestratorDbContext.cs", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "OrchestratorDbContext.cs", "community": 2, "community_name": "Database Context", "source_file": "Orchestrator.Server/Data/OrchestratorDbContext.cs", "file_type": "code", "degree": 1}, {"id": "data_orchestratordbcontext_orchestratordbcontext", "label": "OrchestratorDbContext", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "OrchestratorDbContext", "community": 2, "community_name": "Database Context", "source_file": "Orchestrator.Server/Data/OrchestratorDbContext.cs", "file_type": "code", "degree": 2}, {"id": "dbcontext", "label": "DbContext", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "DbContext", "community": 2, "community_name": "Database Context", "source_file": "", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_models_runnerstatus_cs", "label": "RunnerStatus.cs", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "RunnerStatus.cs", "community": 22, "community_name": "RunnerStatus Enum", "source_file": "Orchestrator.Server/Models/RunnerStatus.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_server_models_artifact_cs", "label": "Artifact.cs", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Artifact.cs", "community": 10, "community_name": "Artifact Model", "source_file": "Orchestrator.Server/Models/Artifact.cs", "file_type": "code", "degree": 1}, {"id": "models_artifact_artifact", "label": "Artifact", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Artifact", "community": 10, "community_name": "Artifact Model", "source_file": "Orchestrator.Server/Models/Artifact.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_models_logmetadata_cs", "label": "LogMetadata.cs", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "LogMetadata.cs", "community": 11, "community_name": "LogMetadata Model", "source_file": "Orchestrator.Server/Models/LogMetadata.cs", "file_type": "code", "degree": 1}, {"id": "models_logmetadata_logmetadata", "label": "LogMetadata", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "LogMetadata", "community": 11, "community_name": "LogMetadata Model", "source_file": "Orchestrator.Server/Models/LogMetadata.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_models_buildstatus_cs", "label": "BuildStatus.cs", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "BuildStatus.cs", "community": 23, "community_name": "BuildStatus Enum", "source_file": "Orchestrator.Server/Models/BuildStatus.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_server_models_pipeline_cs", "label": "Pipeline.cs", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Pipeline.cs", "community": 12, "community_name": "Pipeline Model", "source_file": "Orchestrator.Server/Models/Pipeline.cs", "file_type": "code", "degree": 1}, {"id": "models_pipeline_pipeline", "label": "Pipeline", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Pipeline", "community": 12, "community_name": "Pipeline Model", "source_file": "Orchestrator.Server/Models/Pipeline.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_models_jobstatus_cs", "label": "JobStatus.cs", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "JobStatus.cs", "community": 24, "community_name": "JobStatus Enum", "source_file": "Orchestrator.Server/Models/JobStatus.cs", "file_type": "code", "degree": 0}, {"id": "orchestrator_server_models_build_cs", "label": "Build.cs", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Build.cs", "community": 13, "community_name": "Build Model", "source_file": "Orchestrator.Server/Models/Build.cs", "file_type": "code", "degree": 1}, {"id": "models_build_build", "label": "Build", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Build", "community": 13, "community_name": "Build Model", "source_file": "Orchestrator.Server/Models/Build.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_models_runner_cs", "label": "Runner.cs", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Runner.cs", "community": 14, "community_name": "Runner Model", "source_file": "Orchestrator.Server/Models/Runner.cs", "file_type": "code", "degree": 1}, {"id": "models_runner_runner", "label": "Runner", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Runner", "community": 14, "community_name": "Runner Model", "source_file": "Orchestrator.Server/Models/Runner.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_models_job_cs", "label": "Job.cs", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Job.cs", "community": 15, "community_name": "Job Model", "source_file": "Orchestrator.Server/Models/Job.cs", "file_type": "code", "degree": 1}, {"id": "models_job_job", "label": "Job", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Job", "community": 15, "community_name": "Job Model", "source_file": "Orchestrator.Server/Models/Job.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_services_webhooksignatureservice_cs", "label": "WebhookSignatureService.cs", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "WebhookSignatureService.cs", "community": 16, "community_name": "Webhook Signature Service", "source_file": "Orchestrator.Server/Services/WebhookSignatureService.cs", "file_type": "code", "degree": 1}, {"id": "services_webhooksignatureservice_webhooksignatureservice", "label": "WebhookSignatureService", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "WebhookSignatureService", "community": 16, "community_name": "Webhook Signature Service", "source_file": "Orchestrator.Server/Services/WebhookSignatureService.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_services_runnertokenservice_cs", "label": "RunnerTokenService.cs", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "RunnerTokenService.cs", "community": 17, "community_name": "Runner Token Service", "source_file": "Orchestrator.Server/Services/RunnerTokenService.cs", "file_type": "code", "degree": 1}, {"id": "services_runnertokenservice_runnertokenservice", "label": "RunnerTokenService", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "RunnerTokenService", "community": 17, "community_name": "Runner Token Service", "source_file": "Orchestrator.Server/Services/RunnerTokenService.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_endpoints_logsendpoints_cs", "label": "LogsEndpoints.cs", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "LogsEndpoints.cs", "community": 3, "community_name": "Logs Endpoint", "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "endpoints_logsendpoints_logsendpoints", "label": "LogsEndpoints", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "LogsEndpoints", "community": 3, "community_name": "Logs Endpoint", "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "endpoints_logsendpoints_logsendpoints_maplogsendpoints", "label": ".MapLogsEndpoints()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": ".MapLogsEndpoints()", "community": 3, "community_name": "Logs Endpoint", "source_file": "Orchestrator.Server/Endpoints/LogsEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_endpoints_buildsendpoints_cs", "label": "BuildsEndpoints.cs", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "BuildsEndpoints.cs", "community": 4, "community_name": "Builds Endpoint", "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "endpoints_buildsendpoints_buildsendpoints", "label": "BuildsEndpoints", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "BuildsEndpoints", "community": 4, "community_name": "Builds Endpoint", "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "endpoints_buildsendpoints_buildsendpoints_mapbuildsendpoints", "label": ".MapBuildsEndpoints()", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": ".MapBuildsEndpoints()", "community": 4, "community_name": "Builds Endpoint", "source_file": "Orchestrator.Server/Endpoints/BuildsEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_endpoints_runnersendpoints_cs", "label": "RunnersEndpoints.cs", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "RunnersEndpoints.cs", "community": 5, "community_name": "Runners Endpoint", "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "endpoints_runnersendpoints_runnersendpoints", "label": "RunnersEndpoints", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "RunnersEndpoints", "community": 5, "community_name": "Runners Endpoint", "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "endpoints_runnersendpoints_runnersendpoints_maprunnersendpoints", "label": ".MapRunnersEndpoints()", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": ".MapRunnersEndpoints()", "community": 5, "community_name": "Runners Endpoint", "source_file": "Orchestrator.Server/Endpoints/RunnersEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_endpoints_webhooksendpoints_cs", "label": "WebhooksEndpoints.cs", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "WebhooksEndpoints.cs", "community": 6, "community_name": "Webhooks Endpoint", "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "endpoints_webhooksendpoints_webhooksendpoints", "label": "WebhooksEndpoints", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "WebhooksEndpoints", "community": 6, "community_name": "Webhooks Endpoint", "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "endpoints_webhooksendpoints_webhooksendpoints_mapwebhooksendpoints", "label": ".MapWebhooksEndpoints()", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": ".MapWebhooksEndpoints()", "community": 6, "community_name": "Webhooks Endpoint", "source_file": "Orchestrator.Server/Endpoints/WebhooksEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_server_endpoints_healthendpoints_cs", "label": "HealthEndpoints.cs", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "HealthEndpoints.cs", "community": 7, "community_name": "Health Endpoint", "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "endpoints_healthendpoints_healthendpoints", "label": "HealthEndpoints", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "HealthEndpoints", "community": 7, "community_name": "Health Endpoint", "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "endpoints_healthendpoints_healthendpoints_maphealthendpoints", "label": ".MapHealthEndpoints()", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": ".MapHealthEndpoints()", "community": 7, "community_name": "Health Endpoint", "source_file": "Orchestrator.Server/Endpoints/HealthEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "orchestrator_runner_program_cs", "label": "Program.cs", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Program.cs", "community": 25, "community_name": "Runner Program Entry", "source_file": "Orchestrator.Runner/Program.cs", "file_type": "code", "degree": 0}, {"id": "JobCompleted_cs_JobCompleted", "label": "JobCompleted", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 21.2, "font": {"size": 12, "color": "#ffffff"}, "title": "JobCompleted", "community": 8, "community_name": "JobCompleted Message", "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs", "file_type": "code", "degree": 3}, {"id": "JobCompleted_cs_JobStepResult", "label": "JobStepResult", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "JobStepResult", "community": 8, "community_name": "JobCompleted Message", "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs", "file_type": "code", "degree": 1}, {"id": "JobCompleted_cs_ArtifactInfo", "label": "ArtifactInfo", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "ArtifactInfo", "community": 8, "community_name": "JobCompleted Message", "source_file": "src/Orchestrator.Contracts/Messages/JobCompleted.cs", "file_type": "code", "degree": 2}, {"id": "JobCancelled_cs_JobCancelled", "label": "JobCancelled", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "JobCancelled", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Contracts/Messages/JobCancelled.cs", "file_type": "code", "degree": 1}, {"id": "JobQueued_cs_JobQueued", "label": "JobQueued", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 21.2, "font": {"size": 12, "color": "#ffffff"}, "title": "JobQueued", "community": 9, "community_name": "JobQueued Message", "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs", "file_type": "code", "degree": 3}, {"id": "JobQueued_cs_JobStep", "label": "JobStep", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "JobStep", "community": 9, "community_name": "JobQueued Message", "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs", "file_type": "code", "degree": 1}, {"id": "JobQueued_cs_RegistryAuth", "label": "RegistryAuth", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "RegistryAuth", "community": 9, "community_name": "JobQueued Message", "source_file": "src/Orchestrator.Contracts/Messages/JobQueued.cs", "file_type": "code", "degree": 1}, {"id": "Server_Program", "label": "Server Program", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 32.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Server Program", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Program.cs", "file_type": "code", "degree": 6}, {"id": "OrchestratorDbContext", "label": "OrchestratorDbContext", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 36.2, "font": {"size": 12, "color": "#ffffff"}, "title": "OrchestratorDbContext", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs", "file_type": "code", "degree": 7}, {"id": "RunnerStatus", "label": "RunnerStatus", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "RunnerStatus", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/RunnerStatus.cs", "file_type": "code", "degree": 1}, {"id": "Artifact", "label": "Artifact", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 21.2, "font": {"size": 12, "color": "#ffffff"}, "title": "Artifact", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/Artifact.cs", "file_type": "code", "degree": 3}, {"id": "LogMetadata", "label": "LogMetadata", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "LogMetadata", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/LogMetadata.cs", "file_type": "code", "degree": 2}, {"id": "BuildStatus", "label": "BuildStatus", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "BuildStatus", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/BuildStatus.cs", "file_type": "code", "degree": 1}, {"id": "Pipeline", "label": "Pipeline", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Pipeline", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/Pipeline.cs", "file_type": "code", "degree": 2}, {"id": "JobStatus", "label": "JobStatus", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "JobStatus", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/JobStatus.cs", "file_type": "code", "degree": 1}, {"id": "Build", "label": "Build", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 28.8, "font": {"size": 12, "color": "#ffffff"}, "title": "Build", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/Build.cs", "file_type": "code", "degree": 5}, {"id": "Runner", "label": "Runner", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 21.2, "font": {"size": 12, "color": "#ffffff"}, "title": "Runner", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/Runner.cs", "file_type": "code", "degree": 3}, {"id": "Job", "label": "Job", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Job", "community": 0, "community_name": "Core Domain Model", "source_file": "src/Orchestrator.Server/Models/Job.cs", "file_type": "code", "degree": 8}, {"id": "WebhookSignatureService", "label": "WebhookSignatureService", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "WebhookSignatureService", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Services/WebhookSignatureService.cs", "file_type": "code", "degree": 1}, {"id": "RunnerTokenService", "label": "RunnerTokenService", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "RunnerTokenService", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Services/RunnerTokenService.cs", "file_type": "code", "degree": 1}, {"id": "LogsEndpoints", "label": "LogsEndpoints", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "LogsEndpoints", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Endpoints/LogsEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "BuildsEndpoints", "label": "BuildsEndpoints", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "BuildsEndpoints", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Endpoints/BuildsEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "RunnersEndpoints", "label": "RunnersEndpoints", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "RunnersEndpoints", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Endpoints/RunnersEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "WebhooksEndpoints", "label": "WebhooksEndpoints", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "WebhooksEndpoints", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Endpoints/WebhooksEndpoints.cs", "file_type": "code", "degree": 2}, {"id": "HealthEndpoints", "label": "HealthEndpoints", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.8, "font": {"size": 0, "color": "#ffffff"}, "title": "HealthEndpoints", "community": 1, "community_name": "Server API Endpoints", "source_file": "src/Orchestrator.Server/Endpoints/HealthEndpoints.cs", "file_type": "code", "degree": 1}, {"id": "Runner_Program", "label": "Runner Program", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Runner Program", "community": 26, "community_name": "Runner Program (semantic)", "source_file": "src/Orchestrator.Runner/Program.cs", "file_type": "code", "degree": 0}];
+const RAW_EDGES = [{"from": "orchestrator_server_data_orchestratordbcontext_cs", "to": "data_orchestratordbcontext_orchestratordbcontext", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "data_orchestratordbcontext_orchestratordbcontext", "to": "dbcontext", "label": "inherits", "title": "inherits [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_models_artifact_cs", "to": "models_artifact_artifact", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_models_logmetadata_cs", "to": "models_logmetadata_logmetadata", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_models_pipeline_cs", "to": "models_pipeline_pipeline", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_models_build_cs", "to": "models_build_build", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_models_runner_cs", "to": "models_runner_runner", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_models_job_cs", "to": "models_job_job", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_services_webhooksignatureservice_cs", "to": "services_webhooksignatureservice_webhooksignatureservice", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_services_runnertokenservice_cs", "to": "services_runnertokenservice_runnertokenservice", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_endpoints_logsendpoints_cs", "to": "endpoints_logsendpoints_logsendpoints", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "endpoints_logsendpoints_logsendpoints", "to": "endpoints_logsendpoints_logsendpoints_maplogsendpoints", "label": "method", "title": "method [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_endpoints_buildsendpoints_cs", "to": "endpoints_buildsendpoints_buildsendpoints", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "endpoints_buildsendpoints_buildsendpoints", "to": "endpoints_buildsendpoints_buildsendpoints_mapbuildsendpoints", "label": "method", "title": "method [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_endpoints_runnersendpoints_cs", "to": "endpoints_runnersendpoints_runnersendpoints", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "endpoints_runnersendpoints_runnersendpoints", "to": "endpoints_runnersendpoints_runnersendpoints_maprunnersendpoints", "label": "method", "title": "method [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_endpoints_webhooksendpoints_cs", "to": "endpoints_webhooksendpoints_webhooksendpoints", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "endpoints_webhooksendpoints_webhooksendpoints", "to": "endpoints_webhooksendpoints_webhooksendpoints_mapwebhooksendpoints", "label": "method", "title": "method [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "orchestrator_server_endpoints_healthendpoints_cs", "to": "endpoints_healthendpoints_healthendpoints", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "endpoints_healthendpoints_healthendpoints", "to": "endpoints_healthendpoints_healthendpoints_maphealthendpoints", "label": "method", "title": "method [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "JobCompleted_cs_JobCompleted", "to": "JobCompleted_cs_JobStepResult", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "JobCompleted_cs_JobCompleted", "to": "JobCompleted_cs_ArtifactInfo", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "JobCompleted_cs_JobCompleted", "to": "Job", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "JobCompleted_cs_ArtifactInfo", "to": "Artifact", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "JobCancelled_cs_JobCancelled", "to": "Job", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "JobQueued_cs_JobQueued", "to": "JobQueued_cs_JobStep", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "JobQueued_cs_JobQueued", "to": "JobQueued_cs_RegistryAuth", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "JobQueued_cs_JobQueued", "to": "Job", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "Server_Program", "to": "OrchestratorDbContext", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Server_Program", "to": "BuildsEndpoints", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Server_Program", "to": "RunnersEndpoints", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Server_Program", "to": "LogsEndpoints", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Server_Program", "to": "WebhooksEndpoints", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Server_Program", "to": "HealthEndpoints", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "OrchestratorDbContext", "to": "Pipeline", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "OrchestratorDbContext", "to": "Build", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "OrchestratorDbContext", "to": "Job", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "OrchestratorDbContext", "to": "Runner", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "OrchestratorDbContext", "to": "LogMetadata", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "OrchestratorDbContext", "to": "Artifact", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Runner", "to": "RunnerStatus", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Artifact", "to": "Build", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "LogMetadata", "to": "Job", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Build", "to": "BuildStatus", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Pipeline", "to": "Build", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Job", "to": "JobStatus", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Job", "to": "Build", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "Runner", "to": "Job", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "WebhooksEndpoints", "to": "WebhookSignatureService", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "RunnersEndpoints", "to": "RunnerTokenService", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "Core Domain Model", "count": 11}, {"cid": 1, "color": "#F28E2B", "label": "Server API Endpoints", "count": 8}, {"cid": 2, "color": "#E15759", "label": "Database Context", "count": 3}, {"cid": 3, "color": "#76B7B2", "label": "Logs Endpoint", "count": 3}, {"cid": 4, "color": "#59A14F", "label": "Builds Endpoint", "count": 3}, {"cid": 5, "color": "#EDC948", "label": "Runners Endpoint", "count": 3}, {"cid": 6, "color": "#B07AA1", "label": "Webhooks Endpoint", "count": 3}, {"cid": 7, "color": "#FF9DA7", "label": "Health Endpoint", "count": 3}, {"cid": 8, "color": "#9C755F", "label": "JobCompleted Message", "count": 3}, {"cid": 9, "color": "#BAB0AC", "label": "JobQueued Message", "count": 3}, {"cid": 10, "color": "#4E79A7", "label": "Artifact Model", "count": 2}, {"cid": 11, "color": "#F28E2B", "label": "LogMetadata Model", "count": 2}, {"cid": 12, "color": "#E15759", "label": "Pipeline Model", "count": 2}, {"cid": 13, "color": "#76B7B2", "label": "Build Model", "count": 2}, {"cid": 14, "color": "#59A14F", "label": "Runner Model", "count": 2}, {"cid": 15, "color": "#EDC948", "label": "Job Model", "count": 2}, {"cid": 16, "color": "#B07AA1", "label": "Webhook Signature Service", "count": 2}, {"cid": 17, "color": "#FF9DA7", "label": "Runner Token Service", "count": 2}, {"cid": 18, "color": "#9C755F", "label": "JobCompleted Contract File", "count": 1}, {"cid": 19, "color": "#BAB0AC", "label": "JobCancelled Contract File", "count": 1}, {"cid": 20, "color": "#4E79A7", "label": "JobQueued Contract File", "count": 1}, {"cid": 21, "color": "#F28E2B", "label": "Server Program Entry", "count": 1}, {"cid": 22, "color": "#E15759", "label": "RunnerStatus Enum", "count": 1}, {"cid": 23, "color": "#76B7B2", "label": "BuildStatus Enum", "count": 1}, {"cid": 24, "color": "#59A14F", "label": "JobStatus Enum", "count": 1}, {"cid": 25, "color": "#EDC948", "label": "Runner Program Entry", "count": 1}, {"cid": 26, "color": "#B07AA1", "label": "Runner Program (semantic)", "count": 1}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  _community: n.community, _community_name: n.community_name,
+  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" onclick="focusNode(${JSON.stringify(nid)})">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  document.getElementById('info-content').innerHTML = `
+    <div class="field"><b>${esc(n.label)}</b></div>
+    <div class="field">Type: ${esc(n._file_type || 'unknown')}</div>
+    <div class="field">Community: ${esc(n._community_name)}</div>
+    <div class="field">Source: ${esc(n._source_file || '-')}</div>
+    <div class="field">Degree: ${n._degree}</div>
+    ${neighborIds.length ? `<div class="field" style="margin-top:8px;color:#aaa;font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>` : ''}
+  `;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+
+const selectAllCb = document.getElementById('select-all-cb');
+
+function updateSelectAllState() {
+  const total = LEGEND.length;
+  const hidden = hiddenCommunities.size;
+  selectAllCb.checked = hidden === 0;
+  selectAllCb.indeterminate = hidden > 0 && hidden < total;
+}
+
+function toggleAllCommunities(hide) {
+  document.querySelectorAll('.legend-item').forEach(item => {
+    hide ? item.classList.add('dimmed') : item.classList.remove('dimmed');
+  });
+  document.querySelectorAll('.legend-cb').forEach(cb => {
+    cb.checked = !hide;
+  });
+  LEGEND.forEach(c => {
+    if (hide) hiddenCommunities.add(c.cid); else hiddenCommunities.delete(c.cid);
+  });
+  const updates = RAW_NODES.map(n => ({ id: n.id, hidden: hide }));
+  nodesDS.update(updates);
+  updateSelectAllState();
+}
+
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'legend-cb';
+  cb.checked = true;
+  cb.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (cb.checked) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: !cb.checked }));
+    nodesDS.update(updates);
+    updateSelectAllState();
+  });
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.prepend(cb);
+  item.onclick = (e) => {
+    if (e.target === cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [{"id": "message_contracts", "label": "Message Contracts", "nodes": ["JobCompleted_cs_JobCompleted", "JobCancelled_cs_JobCancelled", "JobQueued_cs_JobQueued"], "relation": "form", "confidence": "INFERRED", "confidence_score": 0.9, "source_file": "src/Orchestrator.Contracts/Messages"}, {"id": "server_endpoints", "label": "Server Endpoints", "nodes": ["BuildsEndpoints", "RunnersEndpoints", "LogsEndpoints", "WebhooksEndpoints", "HealthEndpoints"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "src/Orchestrator.Server/Program.cs"}, {"id": "domain_models", "label": "Domain Models", "nodes": ["Pipeline", "Build", "Job", "Runner", "Artifact", "LogMetadata"], "relation": "form", "confidence": "INFERRED", "confidence_score": 0.9, "source_file": "src/Orchestrator.Server/Data/OrchestratorDbContext.cs"}, {"id": "status_enums", "label": "Status Enums", "nodes": ["BuildStatus", "JobStatus", "RunnerStatus"], "relation": "form", "confidence": "INFERRED", "confidence_score": 0.9, "source_file": "src/Orchestrator.Server/Models"}];
+// afterDrawing passes ctx already transformed to network coordinate space.
+// Draw node positions raw — no manual pan/zoom/DPR math needed.
+network.on('afterDrawing', function(ctx) {
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Centroid and expanded hull in network coordinates
+        const cx = positions.reduce((s, p) => s + p.x, 0) / positions.length;
+        const cy = positions.reduce((s, p) => s + p.y, 0) / positions.length;
+        const expanded = positions.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Orchestrator.Contracts/Orchestrator.Contracts.csproj" />
+    <Project Path="src/Orchestrator.Front/Orchestrator.Front.csproj" />
+    <Project Path="src/Orchestrator.Runner/Orchestrator.Runner.csproj" />
+    <Project Path="src/Orchestrator.Server/Orchestrator.Server.csproj" />
+    <Project Path="src/Orchestrator.Shared/Orchestrator.Shared.csproj" />
+  </Folder>
+</Solution>
