@@ -15,8 +15,11 @@ public class OrchestratorDbContext : DbContext, IUnitOfWork
     public DbSet<LogMetadata> Logs => Set<LogMetadata>();
     public DbSet<Artifact> Artifacts => Set<Artifact>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder) { }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrchestratorDbContext).Assembly);
+    }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
-        => throw new NotImplementedException();
+        => base.SaveChangesAsync(ct);
 }

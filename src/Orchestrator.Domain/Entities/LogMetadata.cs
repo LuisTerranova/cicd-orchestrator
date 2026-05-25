@@ -1,3 +1,5 @@
+using Orchestrator.Domain.Exceptions;
+
 namespace Orchestrator.Domain.Entities;
 
 public class LogMetadata : Entity
@@ -11,5 +13,36 @@ public class LogMetadata : Entity
     private LogMetadata() { }
 
     public static LogMetadata Create(Guid jobId, string filePath, int lineCount, long sizeBytes)
-        => throw new NotImplementedException();
+    {
+        if (jobId == Guid.Empty)
+            throw new DomainException("JobId cannot be empty.");
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new DomainException("FilePath cannot be empty.");
+        if (lineCount < 0)
+            throw new DomainException("LineCount cannot be negative.");
+        if (sizeBytes < 0)
+            throw new DomainException("SizeBytes cannot be negative.");
+
+        return new LogMetadata
+        {
+            Id = Guid.NewGuid(),
+            JobId = jobId,
+            FilePath = filePath,
+            LineCount = lineCount,
+            SizeBytes = sizeBytes,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+
+    public void Update(int lineCount, long sizeBytes)
+    {
+        if (lineCount < 0)
+            throw new DomainException("LineCount cannot be negative.");
+        if (sizeBytes < 0)
+            throw new DomainException("SizeBytes cannot be negative.");
+
+        LineCount = lineCount;
+        SizeBytes = sizeBytes;
+    }
 }
+

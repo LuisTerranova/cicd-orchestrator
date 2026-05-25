@@ -1,3 +1,5 @@
+using Orchestrator.Domain.Exceptions;
+
 namespace Orchestrator.Domain.Entities;
 
 public class Artifact : Entity
@@ -13,5 +15,22 @@ public class Artifact : Entity
     private Artifact() { }
 
     public static Artifact Create(Guid buildId, string name, string storagePath, int sizeBytes, string contentType, DateTime? expiresAt = null)
-        => throw new NotImplementedException();
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Artifact name cannot be empty.");
+        if (sizeBytes < 0)
+            throw new DomainException("SizeBytes cannot be negative.");
+
+        return new Artifact
+        {
+            Id = Guid.NewGuid(),
+            BuildId = buildId,
+            Name = name,
+            StoragePath = storagePath,
+            SizeBytes = sizeBytes,
+            ContentType = contentType,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = expiresAt
+        };
+    }
 }

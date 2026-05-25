@@ -36,3 +36,8 @@ public sealed record RunnerRegisteredEvent(Guid RunnerId, string Name) : IDomain
 {
     public DateTime OccurredOn { get; } = DateTime.UtcNow;
 }
+
+public sealed record RunnerStatusChangedEvent(Guid RunnerId, RunnerStatus OldStatus, RunnerStatus NewStatus) : IDomainEvent
+{
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+}
