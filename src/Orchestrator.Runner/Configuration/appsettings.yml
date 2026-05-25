@@ -1,0 +1,16 @@
+server:
+  url: "http://localhost:5000"
+  credentialsPath: "~/.orchestrator/credentials.json"
+  encryptionKey: ""
+
+runner:
+  name: "runner-01"
+  labels:
+    - linux
+    - podman
+    - dotnet
+  workspacePath: "/tmp/runner-workspaces"
+  concurrency: 1
+  containerRuntime: "podman"
+  heartbeatInterval: "00:00:10"
+  cleanupInterval: "00:05:00"

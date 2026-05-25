@@ -1,102 +1,458 @@
 {
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entity.cs": {
+    "mtime": 1779119614.703356,
+    "hash": "5bcfbea79b5593dc3b9c8126d3dab5ea"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Events/DomainEvents.cs": {
+    "mtime": 1779119614.6639593,
+    "hash": "5f64c82e7b8525e8a3bf94c1d27bc39a"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Exceptions/DomainException.cs": {
+    "mtime": 1779119614.7034144,
+    "hash": "c2dc4e5060a95074b071c342246ab8a0"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IWebhookDispatcher.cs": {
+    "mtime": 1779119614.6643918,
+    "hash": "add8d273ff9b24ccbc2b8e398811ddbf"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IBuildRepository.cs": {
+    "mtime": 1779119614.6641417,
+    "hash": "71cbdc95486030276788348a72a4214d"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/ILogRepository.cs": {
+    "mtime": 1779119614.6642709,
+    "hash": "78c9f8acabf6e490710154d2f041315c"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IRunnerTokenGenerator.cs": {
+    "mtime": 1779119614.6643627,
+    "hash": "96b0b8484b79f39b8042bc4e4f2ce2ee"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IDomainEvent.cs": {
+    "mtime": 1779119614.664198,
+    "hash": "b1c8c8f7eeb1d16ad88f0ec738a25f53"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IArtifactRepository.cs": {
+    "mtime": 1779119614.6639593,
+    "hash": "58f402407bc3f78c0e72fa8e4822fba6"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IUnitOfWork.cs": {
+    "mtime": 1779119614.7034628,
+    "hash": "b6a26872c99cbe273910f8a65c8e1934"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IWebhookSignatureValidator.cs": {
+    "mtime": 1779119614.6644206,
+    "hash": "f4b215e9299ab704da309ff436fc0525"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IRunnerRepository.cs": {
+    "mtime": 1779119614.6643283,
+    "hash": "156eeffeb16f23df1cfd613634e9f503"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IJobRepository.cs": {
+    "mtime": 1779119614.664243,
+    "hash": "42baf59ebb779a184dfa0e310502ef64"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Interfaces/IPipelineRepository.cs": {
+    "mtime": 1779119614.6642997,
+    "hash": "85841cc3a4f919edc1b94dda9a0902fd"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/ValueObjects/RunnerStatus.cs": {
+    "mtime": 1779119614.6645484,
+    "hash": "0f31b904434ce4d34bf15073352108f1"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/ValueObjects/BuildStatus.cs": {
+    "mtime": 1779119614.6644564,
+    "hash": "d355f5728bf293d2092e455b2e218885"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/ValueObjects/JobStatus.cs": {
+    "mtime": 1779119614.6645164,
+    "hash": "c1614f267df7d4cd95bd247e9b0b399b"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entities/Artifact.cs": {
+    "mtime": 1779119614.702902,
+    "hash": "f417f31bdc6ef13daa62a9a073dcdef0"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entities/LogMetadata.cs": {
+    "mtime": 1779119614.7030134,
+    "hash": "b05fe5205fb44bbeb073454e4b42db39"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entities/Pipeline.cs": {
+    "mtime": 1779119614.7032356,
+    "hash": "2e55263917b8acb520578e63d538b511"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entities/Build.cs": {
+    "mtime": 1779119614.7030134,
+    "hash": "ab06620d836f4db9ede1e7a37557a4cc"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entities/Runner.cs": {
+    "mtime": 1779119614.7032974,
+    "hash": "04241f2a699edcc3917e6c028bd51878"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/Entities/Job.cs": {
+    "mtime": 1779119614.7030134,
+    "hash": "4f498dfa3970869ca7686df89aa61ce5"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/obj/Debug/net10.0/Orchestrator.Domain.AssemblyInfo.cs": {
+    "mtime": 1779115022.5150132,
+    "hash": "6e3202b8c71375703bfd0d1b6fc31af7"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/obj/Debug/net10.0/Orchestrator.Domain.GlobalUsings.g.cs": {
+    "mtime": 1779114396.3433778,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Contracts/obj/Debug/net10.0/Orchestrator.Contracts.AssemblyInfo.cs": {
+    "mtime": 1779115022.5520132,
+    "hash": "8e68fa3f9b46405ebe58e40b6c1236b1"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Contracts/obj/Debug/net10.0/Orchestrator.Contracts.GlobalUsings.g.cs": {
+    "mtime": 1779110012.5649703,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
   "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Contracts/Messages/JobCompleted.cs": {
-    "mtime": 1779109977.8579724,
+    "mtime": 1779119614.663624,
     "hash": "65ec27a39df2408ce7eeaafb8f51c2ca"
   },
   "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Contracts/Messages/JobCancelled.cs": {
-    "mtime": 1779109982.7999709,
+    "mtime": 1779119614.6626146,
     "hash": "c4f48346485ff948cef837f13b1a38da"
   },
   "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Contracts/Messages/JobQueued.cs": {
-    "mtime": 1779109972.6579738,
+    "mtime": 1779119614.6636546,
     "hash": "a4baeb9296e28e513a4799f1973adf90"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Program.cs": {
-    "mtime": 1779110004.8909686,
-    "hash": "654efa12543d667f350ad0e934b89901"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/Program.cs": {
+    "mtime": 1779119614.664945,
+    "hash": "9970971d50783ee6a8088bfc6b323d81"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Data/OrchestratorDbContext.cs": {
-    "mtime": 1779109924.1879883,
-    "hash": "fabd9b6f0611bd1f2e931c9be9564f50"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/dotnet.native.js": {
+    "mtime": 1772562102.0,
+    "hash": "c4b42fabbf8b449eb0c3dacab7bb852a"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/RunnerStatus.cs": {
-    "mtime": 1779109841.6060295,
-    "hash": "7e1ec6d56218352bc13ea6c5c42d397b"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/dotnet.runtime.js": {
+    "mtime": 1772562076.0,
+    "hash": "55721d2b1ddbdc2e880772f2f7633825"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/Artifact.cs": {
-    "mtime": 1779110046.8829775,
-    "hash": "f9e3a4a9fb990e346326b683f9fb7e03"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/dotnet.js": {
+    "mtime": 1772562070.0,
+    "hash": "32ee265d50f5b1fed825344c25a94676"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/LogMetadata.cs": {
-    "mtime": 1779110042.3359766,
-    "hash": "fad87a77a41df5c8e42f06c680566f21"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/wwwroot/_framework/dotnet.runtime.peu2mfb29t.js": {
+    "mtime": 1772562076.0,
+    "hash": "55721d2b1ddbdc2e880772f2f7633825"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/BuildStatus.cs": {
-    "mtime": 1779109833.3310437,
-    "hash": "69fafab3e3b36ff06abd7355a8d1c864"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/wwwroot/_framework/blazor.webassembly.66stpp682q.js": {
+    "mtime": 1772568658.0,
+    "hash": "76ed18fc16ad103cbd3b1a5ec41e9752"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/Pipeline.cs": {
-    "mtime": 1779109846.2710233,
-    "hash": "0adbb372a165aa875e1c54b64e96d1aa"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/wwwroot/_framework/dotnet.native.ykrnppwhq2.js": {
+    "mtime": 1772562102.0,
+    "hash": "c4b42fabbf8b449eb0c3dacab7bb852a"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/JobStatus.cs": {
-    "mtime": 1779109837.0510373,
-    "hash": "1befdf1fee2f03e8d4633f13eb2ed9cf"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/bin/Debug/net10.0/wwwroot/_framework/dotnet.h6ruotw47s.js": {
+    "mtime": 1779118765.9390728,
+    "hash": "637ddc02d1a13060f3c6db29d55396eb"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/Build.cs": {
-    "mtime": 1779110028.5979736,
-    "hash": "bb0fa0506b132c07a7dc274aeb6dd3c8"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/obj/Debug/net10.0/Orchestrator.Front.GlobalUsings.g.cs": {
+    "mtime": 1779110959.6881359,
+    "hash": "a7d8c089828ecd75ec6e836081dbf1b3"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/Runner.cs": {
-    "mtime": 1779110038.3729758,
-    "hash": "8b71ed2af38efc070a406695acec9ad9"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/obj/Debug/net10.0/dotnet.js": {
+    "mtime": 1779118765.9390728,
+    "hash": "637ddc02d1a13060f3c6db29d55396eb"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Models/Job.cs": {
-    "mtime": 1779110033.6459746,
-    "hash": "c3904bb4ec697bca2cddb55186830426"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/obj/Debug/net10.0/ValidatableTypeAttribute.cs": {
+    "mtime": 1779110959.674136,
+    "hash": "da55e1fcf6c50e4af83d126ff112a5ba"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Services/WebhookSignatureService.cs": {
-    "mtime": 1779109966.9649756,
-    "hash": "7cf809b0a473927f52b5b3b18e7478ad"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/obj/Debug/net10.0/Orchestrator.Front.AssemblyInfo.cs": {
+    "mtime": 1779113866.4946864,
+    "hash": "3d7038e178974eab77fbd1726eb0c9f4"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Services/RunnerTokenService.cs": {
-    "mtime": 1779109962.561977,
-    "hash": "78bd0fdea6ac81dd9d807206eee05ed1"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/obj/Debug/net10.0/EmbeddedAttribute.cs": {
+    "mtime": 1779110959.6721358,
+    "hash": "0a21f95c30dba13d107dbad035e804de"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Endpoints/LogsEndpoints.cs": {
-    "mtime": 1779109949.9779806,
-    "hash": "3ce1371d5f7257012a61e17b1c563cd1"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Program.cs": {
+    "mtime": 1779114261.6634564,
+    "hash": "83d9a0656b6a5cd32d89b201cbcb4fd7"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Endpoints/BuildsEndpoints.cs": {
-    "mtime": 1779109928.706987,
-    "hash": "fe76fafe8320938650993cc151fe03fa"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/LogsEndpoints.cs": {
+    "mtime": 1779114311.6824272,
+    "hash": "b6589739b1f8e09ee0cdb834d9cf5052"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Endpoints/RunnersEndpoints.cs": {
-    "mtime": 1779109945.126982,
-    "hash": "0b2e2f5f992dcb155b80d994c449374c"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/BuildsEndpoints.cs": {
+    "mtime": 1779114277.8424468,
+    "hash": "0458ef6e0bca81f25f8bf0c11c817d5c"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Endpoints/WebhooksEndpoints.cs": {
-    "mtime": 1779109954.0949793,
-    "hash": "3c524ef4eb90d57176380c3572b075d0"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/JobsEndpoints.cs": {
+    "mtime": 1779114292.874438,
+    "hash": "c3289a6af144bdc48792d89a244daf75"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/Endpoints/HealthEndpoints.cs": {
-    "mtime": 1779109958.0899782,
-    "hash": "05933c183f0a3aaa00a11d41a1d8a570"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/RunnersEndpoints.cs": {
+    "mtime": 1779114284.807443,
+    "hash": "8d5b3483ae7f8746ca68c51fe68795d5"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/WebhooksEndpoints.cs": {
+    "mtime": 1779114300.6884336,
+    "hash": "af60cc2914419b46843ae915f2a80210"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/HealthEndpoints.cs": {
+    "mtime": 1779114325.6614192,
+    "hash": "c9eed3e509daf8bf8bdea947b28c581a"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/Endpoints/PipelinesEndpoints.cs": {
+    "mtime": 1779114271.5804505,
+    "hash": "899815fe5d1fb7cf7d23b34887a17907"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/obj/Debug/net10.0/Orchestrator.Api.AssemblyInfo.cs": {
+    "mtime": 1779115023.6710126,
+    "hash": "bc219b3ef34d7dfb5ae59ff23a31a886"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/obj/Debug/net10.0/Orchestrator.Api.GlobalUsings.g.cs": {
+    "mtime": 1779115006.5920227,
+    "hash": "3ca3ba71f186b61cb901145d168ce1fd"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/obj/Debug/net10.0/Orchestrator.Api.MvcApplicationPartsAssemblyInfo.cs": {
+    "mtime": 1779115023.7190125,
+    "hash": "bbddc63dfa9d9faa474fcaa2e2be30af"
   },
   "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Runner/Program.cs": {
-    "mtime": 1779109766.1441598,
+    "mtime": 1779119614.6977847,
     "hash": "efd5b3671fa19293c073b886547142aa"
   },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Runner/obj/Debug/net10.0/Orchestrator.Runner.GlobalUsings.g.cs": {
+    "mtime": 1779110012.51197,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Runner/obj/Debug/net10.0/Orchestrator.Runner.AssemblyInfo.cs": {
+    "mtime": 1779113866.6446862,
+    "hash": "b71a9745b3188fd9509219940efaa823"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/DependencyInjection.cs": {
+    "mtime": 1779114725.5662632,
+    "hash": "f5a3593a71424e096ce316b2adad56e6"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Jobs/AssignJobCommand.cs": {
+    "mtime": 1779114725.566317,
+    "hash": "316263132dfd6892d55cdeb87c3d4ede"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Jobs/CancelJobCommand.cs": {
+    "mtime": 1779114725.5664375,
+    "hash": "8173f08ddd30b1ba8ade74fdf10fb88f"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Jobs/AssignJobHandler.cs": {
+    "mtime": 1779114725.566381,
+    "hash": "8821ee98bfb5c219afcc1a731e091ed4"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Jobs/CompleteJobCommand.cs": {
+    "mtime": 1779114725.5665514,
+    "hash": "3a68258109f6bc777baf69de65ccc038"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Jobs/CompleteJobHandler.cs": {
+    "mtime": 1779114725.5666087,
+    "hash": "9f4979694ec39c3377aed3a1bc2fa5a0"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Jobs/CancelJobHandler.cs": {
+    "mtime": 1779114725.5664957,
+    "hash": "5a9200d0aa89b5be82ade8851dc06444"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Logs/UploadLogHandler.cs": {
+    "mtime": 1779114725.5667772,
+    "hash": "8b31341259bb255e06d76892be596e86"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Logs/GetLogByJobIdQuery.cs": {
+    "mtime": 1779114725.5666647,
+    "hash": "99b1409dc53e69a4364e499a87a1c9e2"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Logs/UploadLogCommand.cs": {
+    "mtime": 1779114725.56672,
+    "hash": "2d0c1339f3f54b773c9d97129ea20e7f"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Webhooks/ProcessWebhookHandler.cs": {
+    "mtime": 1779114725.567351,
+    "hash": "cb8730dac743551c4d40907e1620f1b3"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Webhooks/ProcessWebhookCommand.cs": {
+    "mtime": 1779114725.5672934,
+    "hash": "8764f5c6da140c7f61f2c6eaf060e369"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Pipelines/GetPipelineByIdQuery.cs": {
+    "mtime": 1779114725.5670168,
+    "hash": "4b14e0af7e65e3fb0af087f9d5635984"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Pipelines/GetAllPipelinesQuery.cs": {
+    "mtime": 1779114748.6641726,
+    "hash": "b6db2ad8066e2bce8285b65098f81745"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Pipelines/CreatePipelineHandler.cs": {
+    "mtime": 1779114725.5668893,
+    "hash": "7af75e1052078a5530dccff5b468d98d"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Pipelines/CreatePipelineCommand.cs": {
+    "mtime": 1779114725.5668318,
+    "hash": "3f88b5c80684762ebce8f09d4b972bad"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Common/IDomainEventDispatcher.cs": {
+    "mtime": 1779114725.566206,
+    "hash": "30b0ac33fe1833ef77abe8174d42b8eb"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Builds/TriggerBuildCommand.cs": {
+    "mtime": 1779114725.5660856,
+    "hash": "a192c9cc6ce4cbca0b21a2e62563095c"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Builds/GetBuildsByPipelineIdQuery.cs": {
+    "mtime": 1779114773.4641583,
+    "hash": "4d8bb62b53f6a0767a37b7261aa10d21"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Builds/TriggerBuildHandler.cs": {
+    "mtime": 1779114725.566149,
+    "hash": "39adcde1814d8a0f5637d8b8df0bbb10"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Builds/GetBuildByIdQuery.cs": {
+    "mtime": 1779114725.5658982,
+    "hash": "486134d4876deb140cbc8305f4c011c5"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Runners/GetRunnerByIdQuery.cs": {
+    "mtime": 1779114725.5671299,
+    "hash": "bbf8ffe677e551b5acb2161dfe9f1d1b"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Runners/RegisterRunnerHandler.cs": {
+    "mtime": 1779114725.56724,
+    "hash": "8d975ad16c5cc0abdff271beb248f5ed"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Runners/GetAllRunnersQuery.cs": {
+    "mtime": 1779114779.9031546,
+    "hash": "a1d79cac5d24272e765bdd3d8b5cddec"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/Runners/RegisterRunnerCommand.cs": {
+    "mtime": 1779114725.567184,
+    "hash": "1da32133e340e2aeddfee14f0d43d19f"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/obj/Debug/net10.0/Orchestrator.Application.GlobalUsings.g.cs": {
+    "mtime": 1779114725.5674677,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/obj/Debug/net10.0/Orchestrator.Application.AssemblyInfo.cs": {
+    "mtime": 1779115023.093013,
+    "hash": "088d93aae2dfb99c5a0169ac6929bc4b"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1779123671.1678061,
+    "hash": "6353a5fe2dfbbb0d6f64f440a89f6a77"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Auth/JwtRunnerTokenGenerator.cs": {
+    "mtime": 1779114959.22105,
+    "hash": "0b07a996565bf82919a859c808acf2b5"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Webhooks/HttpClientWebhookDispatcher.cs": {
+    "mtime": 1779114892.6820405,
+    "hash": "c7a8fdd86076b9b254a56a1907cf80f6"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Services/HmacWebhookSignatureValidator.cs": {
+    "mtime": 1779114968.3680449,
+    "hash": "3a55c6367d9432303984b06950e65117"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/OrchestratorDbContext.cs": {
+    "mtime": 1779114892.6814795,
+    "hash": "a23d547c8f30607eea9912868d015d72"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Configurations/RunnerConfiguration.cs": {
+    "mtime": 1779114892.681417,
+    "hash": "c54beecf3fcfe54f86fd383ad079bdb0"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Configurations/LogMetadataConfiguration.cs": {
+    "mtime": 1779114892.6812935,
+    "hash": "427f2ca21562738075da4d9b8e30eab3"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Configurations/BuildConfiguration.cs": {
+    "mtime": 1779114892.6811576,
+    "hash": "a104b2efe953ba2ba90bae97dad853c5"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Configurations/JobConfiguration.cs": {
+    "mtime": 1779114892.681231,
+    "hash": "902ef1c574e5f0b09e29dddc2bef7782"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Configurations/ArtifactConfiguration.cs": {
+    "mtime": 1779114892.6810942,
+    "hash": "fbacca1dae3fcaa3447171c218e7429d"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Configurations/PipelineConfiguration.cs": {
+    "mtime": 1779114892.6813545,
+    "hash": "bb9c68787a6ccf86d2d608a39a534dd9"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Repositories/EfJobRepository.cs": {
+    "mtime": 1779114892.6816874,
+    "hash": "ff655fed608faaa9947ec95e7bf4f8ea"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Repositories/EfArtifactRepository.cs": {
+    "mtime": 1779114934.9160643,
+    "hash": "fac95ba4a488c8995a9b88fc677abafe"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Repositories/EfRunnerRepository.cs": {
+    "mtime": 1779114892.6818905,
+    "hash": "47fe27102ab17a3c103b93b61ed0bb51"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Repositories/EfBuildRepository.cs": {
+    "mtime": 1779114892.6816201,
+    "hash": "bd813c6a45cb68fdaaa431589be19121"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Repositories/EfPipelineRepository.cs": {
+    "mtime": 1779114925.8220696,
+    "hash": "a692d1b418d935defb9365b3708d7164"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/Persistence/Repositories/EfLogRepository.cs": {
+    "mtime": 1779114892.6817534,
+    "hash": "a361258e4cad0a4429ca7f658a18ea9e"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/obj/Debug/net10.0/Orchestrator.Infrastructure.AssemblyInfo.cs": {
+    "mtime": 1779115023.098013,
+    "hash": "2e1011c2478d15d9af72ea4d422161df"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/obj/Debug/net10.0/Orchestrator.Infrastructure.GlobalUsings.g.cs": {
+    "mtime": 1779114892.6821778,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/README.md": {
+    "mtime": 1779119614.6626146,
+    "hash": "9a30615caf56d71dce0909b75bbb5b4c"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Domain/obj/Debug/net10.0/Orchestrator.Domain.csproj.FileListAbsolute.txt": {
+    "mtime": 1779115022.830013,
+    "hash": "fc7005f8e8dbf8b8342b376de61945d6"
+  },
   "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Contracts/obj/Debug/net10.0/Orchestrator.Contracts.csproj.FileListAbsolute.txt": {
-    "mtime": 1779110016.7469711,
+    "mtime": 1779115022.834013,
     "hash": "8ef31c26f66346b92e6f406d5350cdde"
   },
-  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Server/obj/Debug/net10.0/Orchestrator.Server.csproj.FileListAbsolute.txt": {
-    "mtime": 1779110056.3989797,
-    "hash": "c1eba30f8cdf2f714125a0805496f8e6"
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/wwwroot/index.html": {
+    "mtime": 1779119614.6652484,
+    "hash": "5665d6a4d1810c1b74da1248f1627e71"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/obj/Debug/net10.0/Orchestrator.Front.csproj.FileListAbsolute.txt": {
+    "mtime": 1779118766.859997,
+    "hash": "3289ba82894b7476f2a3ed45788489b5"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Api/obj/Debug/net10.0/Orchestrator.Api.csproj.FileListAbsolute.txt": {
+    "mtime": 1779115024.601012,
+    "hash": "189fd259130b0ab4e146d7dbcb9b4212"
   },
   "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Runner/obj/Debug/net10.0/Orchestrator.Runner.csproj.FileListAbsolute.txt": {
     "mtime": 1779110017.5809712,
     "hash": "27fabb0eb1dfa0e4534533670f99146d"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Application/obj/Debug/net10.0/Orchestrator.Application.csproj.FileListAbsolute.txt": {
+    "mtime": 1779115023.3960128,
+    "hash": "f0a9741b0e248616c899fe85098d06f7"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Infrastructure/obj/Debug/net10.0/Orchestrator.Infrastructure.csproj.FileListAbsolute.txt": {
+    "mtime": 1779115023.3920128,
+    "hash": "12fb84d8b4393a8aebe01d32402d0dc2"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/wwwroot/favicon.png": {
+    "mtime": 1779119614.6651485,
+    "hash": "eab4f24ab5ff80be586dcdab8e87dc9c"
+  },
+  "/home/terranova/Documents/development/cicd-orchestrator/src/Orchestrator.Front/wwwroot/icon-192.png": {
+    "mtime": 1779119614.6651485,
+    "hash": "4ed916c575b07ad638ed9dbd55219ad5"
   }
 }

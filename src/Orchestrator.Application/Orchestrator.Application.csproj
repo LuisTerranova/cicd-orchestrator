@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Orchestrator.Domain\Orchestrator.Domain.csproj" />
+    <ProjectReference Include="..\Orchestrator.Contracts\Orchestrator.Contracts.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
   </ItemGroup>
 
