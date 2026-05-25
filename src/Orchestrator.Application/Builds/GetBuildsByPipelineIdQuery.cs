@@ -6,8 +6,11 @@ public sealed class GetBuildsByPipelineIdQuery
 {
     private readonly IBuildRepository _builds;
 
-    public GetBuildsByPipelineIdQuery(IBuildRepository builds) { }
+    public GetBuildsByPipelineIdQuery(IBuildRepository builds)
+    {
+        _builds = builds;
+    }
 
-    public Task<IReadOnlyCollection<Domain.Entities.Build>> HandleAsync(Guid pipelineId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<IReadOnlyCollection<Domain.Entities.Build>> HandleAsync(Guid pipelineId, CancellationToken ct = default)
+        => await _builds.GetByPipelineIdAsync(pipelineId, ct);
 }

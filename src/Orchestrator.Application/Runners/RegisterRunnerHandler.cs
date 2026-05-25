@@ -12,8 +12,21 @@ public sealed class RegisterRunnerHandler
     public RegisterRunnerHandler(
         IRunnerRepository runners,
         IUnitOfWork unitOfWork,
-        IDomainEventDispatcher eventDispatcher) { }
+        IDomainEventDispatcher eventDispatcher)
+    {
+        _runners = runners;
+        _unitOfWork = unitOfWork;
+        _eventDispatcher = eventDispatcher;
+    }
 
-    public Task<Guid> HandleAsync(RegisterRunnerCommand command, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<Guid> HandleAsync(RegisterRunnerCommand command, CancellationToken ct = default)
+    {
+        var runner = Domain.Entities.Runner.Create(command.Name, command.Labels, command.Os, command.Arch);
+        runner.Register();
+        await _runners.AddAsync(runner, ct);
+        await _eventDispatcher.DispatchAsync(runner.DomainEvents, ct);
+        runner.ClearDomainEvents();
+        await _unitOfWork.SaveChangesAsync(ct);
+        return runner.Id;
+    }
 }

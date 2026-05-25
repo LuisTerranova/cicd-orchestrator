@@ -12,8 +12,21 @@ public sealed class CancelJobHandler
     public CancelJobHandler(
         IJobRepository jobs,
         IUnitOfWork unitOfWork,
-        IDomainEventDispatcher eventDispatcher) { }
+        IDomainEventDispatcher eventDispatcher)
+    {
+        _jobs = jobs;
+        _unitOfWork = unitOfWork;
+        _eventDispatcher = eventDispatcher;
+    }
 
-    public Task HandleAsync(CancelJobCommand command, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task HandleAsync(CancelJobCommand command, CancellationToken ct = default)
+    {
+        var job = await _jobs.GetByIdAsync(command.JobId, ct)
+            ?? throw new InvalidOperationException($"Job {command.JobId} not found");
+
+        job.Cancel(command.Reason);
+        await _eventDispatcher.DispatchAsync(job.DomainEvents, ct);
+        job.ClearDomainEvents();
+        await _unitOfWork.SaveChangesAsync(ct);
+    }
 }

@@ -14,8 +14,19 @@ public sealed class ProcessWebhookHandler
         IWebhookSignatureValidator signatureValidator,
         IWebhookDispatcher webhookDispatcher,
         IBuildRepository builds,
-        IDomainEventDispatcher eventDispatcher) { }
+        IDomainEventDispatcher eventDispatcher)
+    {
+        _signatureValidator = signatureValidator;
+        _webhookDispatcher = webhookDispatcher;
+        _builds = builds;
+        _eventDispatcher = eventDispatcher;
+    }
 
-    public Task HandleAsync(ProcessWebhookCommand command, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task HandleAsync(ProcessWebhookCommand command, CancellationToken ct = default)
+    {
+        if (!_signatureValidator.Validate(command.Payload, command.Signature, command.Secret))
+            throw new InvalidOperationException("Invalid webhook signature");
+
+        await _webhookDispatcher.DispatchAsync(command.Payload, new { received = true });
+    }
 }

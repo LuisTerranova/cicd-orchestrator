@@ -6,8 +6,11 @@ public sealed class GetAllRunnersQuery
 {
     private readonly IRunnerRepository _runners;
 
-    public GetAllRunnersQuery(IRunnerRepository runners) { }
+    public GetAllRunnersQuery(IRunnerRepository runners)
+    {
+        _runners = runners;
+    }
 
-    public Task<IReadOnlyCollection<Domain.Entities.Runner>> HandleAsync(CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<IReadOnlyCollection<Domain.Entities.Runner>> HandleAsync(CancellationToken ct = default)
+        => await _runners.GetAllAsync(ct);
 }

@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿#pragma warning disable CA1416
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Orchestrator.Runner.Agent;
 using Orchestrator.Runner.Artifacts;
 using Orchestrator.Runner.Cli;
@@ -16,13 +19,43 @@ using Orchestrator.Runner.WebSocket;
 
 var cli = new CliRootCommand();
 var parseResult = cli.Invoke(args);
-var configPath = parseResult.GetValue<string>("--config");
+
+if (parseResult.HasOption("--version"))
+{
+    Console.WriteLine("Orchestrator.Runner 1.0.0");
+    return;
+}
+
+var configPath = parseResult.HasOption("--config")
+    ? parseResult.GetValue<string>("--config")
+    : "~/.orchestrator/config.yml";
+
+var loader = new ConfigurationLoader();
+var options = loader.Load(configPath, parseResult);
+
+using var loggerFactory = LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(
+    Enum.TryParse<LogLevel>(options.LogLevel, out var level) ? level : LogLevel.Information));
+var validator = new RunnerOptionsValidator(loggerFactory.CreateLogger<RunnerOptionsValidator>());
+
+var errors = validator.Validate(options);
+if (errors.Count > 0)
+{
+    foreach (var error in errors)
+        Console.Error.WriteLine($"FATAL: {error}");
+    Environment.Exit(1);
+}
+
+if (parseResult.HasOption("--dry-run"))
+{
+    Console.WriteLine("Configuration valid. Dry-run complete.");
+    return;
+}
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
-        services.AddSingleton<RunnerOptions>();
-        services.AddSingleton<RunnerOptionsValidator>();
+        services.AddSingleton(options);
+        services.AddSingleton(loggerFactory);
         services.AddSingleton<RunnerState>();
         services.AddSingleton<SecretDecryptor>();
         services.AddSingleton<CredentialStore>();
@@ -30,6 +63,9 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ServerWebSocketClient>();
         services.AddSingleton<PodmanCli>();
         services.AddSingleton<ProcessInvoker>();
+        services.AddSingleton<TempScriptWriter>();
+        services.AddSingleton<NativeStepRunner>();
+        services.AddSingleton<ContainerStepRunner>();
         services.AddSingleton<StepRunner>();
         services.AddSingleton<JobExecutor>();
         services.AddSingleton<LogCapturer>();
@@ -45,7 +81,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<CancellationConsumer>();
         services.AddSingleton<JobResultPublisher>();
 
-        MassTransitSetup.Configure(services);
+        MassTransitSetup.Configure(services, options);
         services.AddHttpClient();
     })
     .Build();

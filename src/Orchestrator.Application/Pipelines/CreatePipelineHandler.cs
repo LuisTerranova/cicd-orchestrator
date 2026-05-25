@@ -12,8 +12,20 @@ public sealed class CreatePipelineHandler
     public CreatePipelineHandler(
         IPipelineRepository pipelines,
         IUnitOfWork unitOfWork,
-        IDomainEventDispatcher eventDispatcher) { }
+        IDomainEventDispatcher eventDispatcher)
+    {
+        _pipelines = pipelines;
+        _unitOfWork = unitOfWork;
+        _eventDispatcher = eventDispatcher;
+    }
 
-    public Task<Guid> HandleAsync(CreatePipelineCommand command, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<Guid> HandleAsync(CreatePipelineCommand command, CancellationToken ct = default)
+    {
+        var pipeline = Domain.Entities.Pipeline.Create(command.Name, command.Repo, command.Branch, command.YamlPath);
+        await _pipelines.AddAsync(pipeline, ct);
+        await _eventDispatcher.DispatchAsync(pipeline.DomainEvents, ct);
+        pipeline.ClearDomainEvents();
+        await _unitOfWork.SaveChangesAsync(ct);
+        return pipeline.Id;
+    }
 }

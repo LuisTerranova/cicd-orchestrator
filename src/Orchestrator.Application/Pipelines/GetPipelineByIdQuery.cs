@@ -6,8 +6,11 @@ public sealed class GetPipelineByIdQuery
 {
     private readonly IPipelineRepository _pipelines;
 
-    public GetPipelineByIdQuery(IPipelineRepository pipelines) { }
+    public GetPipelineByIdQuery(IPipelineRepository pipelines)
+    {
+        _pipelines = pipelines;
+    }
 
-    public Task<Domain.Entities.Pipeline?> HandleAsync(Guid id, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<Domain.Entities.Pipeline?> HandleAsync(Guid id, CancellationToken ct = default)
+        => await _pipelines.GetByIdAsync(id, ct);
 }

@@ -1,36 +1,61 @@
+using System.Collections.Concurrent;
+
 namespace Orchestrator.Runner.Agent;
 
 public sealed class RunnerState
 {
+    private readonly SemaphoreSlim _slot;
+    private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _jobCts = new();
+
     public RunnerState()
     {
-        throw new NotImplementedException();
+        _slot = new SemaphoreSlim(1, 1);
+    }
+
+    public RunnerState(int concurrency)
+    {
+        _slot = new SemaphoreSlim(concurrency, concurrency);
     }
 
     public bool Draining { get; set; }
 
-    public bool TryAcquireSlot()
-    {
-        throw new NotImplementedException();
-    }
+    public Guid[] ActiveJobIds => [.. _jobCts.Keys];
 
-    public void ReleaseSlot()
-    {
-        throw new NotImplementedException();
-    }
+    public bool TryAcquireSlot() => _slot.Wait(0);
 
-    public void SetActiveJob(Guid jobId)
+    public void ReleaseSlot() => _slot.Release();
+
+    // Creates per-job CancellationTokenSource so CancelJob can signal a specific job.
+    public CancellationToken SetActiveJob(Guid jobId)
     {
-        throw new NotImplementedException();
+        var cts = new CancellationTokenSource();
+        _jobCts[jobId] = cts;
+        return cts.Token;
     }
 
     public void ClearActiveJob(Guid jobId)
     {
-        throw new NotImplementedException();
+        if (_jobCts.TryRemove(jobId, out var cts))
+        {
+            cts.Dispose();
+        }
     }
 
+    // Called by CancellationConsumer to abort a running job via its linked CTS token.
+    public void CancelJob(Guid jobId)
+    {
+        if (_jobCts.TryGetValue(jobId, out var cts))
+        {
+            cts.Cancel();
+        }
+    }
+
+    // Polling loop used during graceful shutdown — waits for all active jobs to finish.
     public async Task WaitForActiveJobs(CancellationToken ct)
     {
-        throw new NotImplementedException();
+        while (_jobCts.Count > 0 && !ct.IsCancellationRequested)
+        {
+            await Task.Delay(500, ct);
+        }
     }
 }

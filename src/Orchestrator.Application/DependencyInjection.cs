@@ -11,5 +11,22 @@ namespace Orchestrator.Application;
 public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
-        => throw new NotImplementedException();
+    {
+        services.AddScoped<TriggerBuildHandler>();
+        services.AddScoped<GetBuildByIdQuery>();
+        services.AddScoped<GetBuildsByPipelineIdQuery>();
+        services.AddScoped<AssignJobHandler>();
+        services.AddScoped<CancelJobHandler>();
+        services.AddScoped<CompleteJobHandler>();
+        services.AddScoped<GetLogByJobIdQuery>();
+        services.AddScoped<UploadLogHandler>();
+        services.AddScoped<CreatePipelineHandler>();
+        services.AddScoped<GetAllPipelinesQuery>();
+        services.AddScoped<GetPipelineByIdQuery>();
+        services.AddScoped<GetAllRunnersQuery>();
+        services.AddScoped<GetRunnerByIdQuery>();
+        services.AddScoped<RegisterRunnerHandler>();
+        services.AddScoped<ProcessWebhookHandler>();
+        return services;
+    }
 }

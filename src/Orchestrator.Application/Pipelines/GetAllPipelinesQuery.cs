@@ -6,8 +6,11 @@ public sealed class GetAllPipelinesQuery
 {
     private readonly IPipelineRepository _pipelines;
 
-    public GetAllPipelinesQuery(IPipelineRepository pipelines) { }
+    public GetAllPipelinesQuery(IPipelineRepository pipelines)
+    {
+        _pipelines = pipelines;
+    }
 
-    public Task<IReadOnlyCollection<Domain.Entities.Pipeline>> HandleAsync(CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<IReadOnlyCollection<Domain.Entities.Pipeline>> HandleAsync(CancellationToken ct = default)
+        => await _pipelines.GetAllAsync(ct);
 }

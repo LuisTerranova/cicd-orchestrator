@@ -4,6 +4,14 @@ public sealed class SecretMasker
 {
     public string Mask(string line, Dictionary<string, string> secrets)
     {
-        throw new NotImplementedException();
+        foreach (var (key, value) in secrets)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                line = line.Replace(value, "***", StringComparison.Ordinal);
+            }
+        }
+
+        return line;
     }
 }
