@@ -15,8 +15,14 @@ public sealed class StepRunner
 
     // Routes to ContainerStepRunner when the job specifies an image,
     // otherwise falls back to direct process execution on the host.
-    public async Task<JobStepResult> RunStepAsync(JobStep step, Guid jobId, string workspacePath,
-        Dictionary<string, string> secrets, string? image, CancellationToken ct)
+    public async Task<JobStepResult> RunStepAsync(
+        JobStep step,
+        Guid jobId,
+        string workspacePath,
+        Dictionary<string, string> secrets,
+        string? image,
+        CancellationToken ct
+    )
     {
         if (!string.IsNullOrEmpty(image))
         {

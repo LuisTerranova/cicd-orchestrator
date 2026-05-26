@@ -32,7 +32,14 @@ public sealed class LogCapturer : IDisposable
             return;
 
         var masked = _masker.Mask(line, state.Secrets);
-        var entry = JsonSerializer.Serialize(new { ts = DateTime.UtcNow, stream, line = masked });
+        var entry = JsonSerializer.Serialize(
+            new
+            {
+                ts = DateTime.UtcNow,
+                stream,
+                line = masked,
+            }
+        );
         state.Buffer.Add(entry);
         state.TotalLines++;
         state.BufferSize += Encoding.UTF8.GetByteCount(entry + "\n");

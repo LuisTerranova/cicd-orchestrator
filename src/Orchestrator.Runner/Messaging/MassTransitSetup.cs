@@ -16,28 +16,39 @@ public static class MassTransitSetup
             bus.AddConsumer<JobConsumer>();
             bus.AddConsumer<CancellationConsumer>();
 
-            bus.UsingRabbitMq((ctx, cfg) =>
-            {
-                cfg.Host(options.ServerUrl, h =>
+            bus.UsingRabbitMq(
+                (ctx, cfg) =>
                 {
-                    // Default guest/guest for local dev; configurable via connection string
-                });
+                    cfg.Host(
+                        options.ServerUrl,
+                        h =>
+                        {
+                            // Default guest/guest for local dev; configurable via connection string
+                        }
+                    );
 
-                cfg.ReceiveEndpoint($"jobs.runner.{options.Name}", e =>
-                {
-                    e.PrefetchCount = (ushort)options.Concurrency;
-                    e.ConfigureConsumeTopology = false;
+                    cfg.ReceiveEndpoint(
+                        $"jobs.runner.{options.Name}",
+                        e =>
+                        {
+                            e.PrefetchCount = (ushort)options.Concurrency;
+                            e.ConfigureConsumeTopology = false;
 
-                    e.Consumer<JobConsumer>(ctx);
-                    e.Consumer<CancellationConsumer>(ctx);
+                            e.Consumer<JobConsumer>(ctx);
+                            e.Consumer<CancellationConsumer>(ctx);
 
-                    e.Bind("jobs", x =>
-                    {
-                        x.RoutingKey = $"job.{options.Name}";
-                        x.ExchangeType = "topic";
-                    });
-                });
-            });
+                            e.Bind(
+                                "jobs",
+                                x =>
+                                {
+                                    x.RoutingKey = $"job.{options.Name}";
+                                    x.ExchangeType = "topic";
+                                }
+                            );
+                        }
+                    );
+                }
+            );
         });
     }
 }

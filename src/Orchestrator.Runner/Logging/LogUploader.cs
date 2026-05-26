@@ -15,7 +15,12 @@ public sealed class LogUploader
     // Uploads a log chunk with Content-Range header for resumable uploads.
     // Uses a marker file on disk to track byte offset between chunks,
     // so interrupted uploads can be resumed from the last committed position.
-    public async Task UploadChunkAsync(Guid jobId, string content, int lineCount, CancellationToken ct)
+    public async Task UploadChunkAsync(
+        Guid jobId,
+        string content,
+        int lineCount,
+        CancellationToken ct
+    )
     {
         var markerPath = GetMarkerPath(jobId);
         var offset = 0L;
@@ -28,7 +33,7 @@ public sealed class LogUploader
         var bytes = Encoding.UTF8.GetBytes(content);
         var request = new HttpRequestMessage(HttpMethod.Post, $"api/jobs/{jobId}/logs")
         {
-            Content = new ByteArrayContent(bytes)
+            Content = new ByteArrayContent(bytes),
         };
 
         // Inform the server where this chunk fits in the overall log stream.
@@ -50,7 +55,11 @@ public sealed class LogUploader
             File.Delete(markerPath);
         }
 
-        var response = await _http.PostAsJsonAsync($"api/jobs/{jobId}/logs/finalize", new { totalLines }, ct);
+        var response = await _http.PostAsJsonAsync(
+            $"api/jobs/{jobId}/logs/finalize",
+            new { totalLines },
+            ct
+        );
         response.EnsureSuccessStatusCode();
     }
 

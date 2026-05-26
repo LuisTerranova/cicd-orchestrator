@@ -11,7 +11,10 @@ public sealed class CredentialStore
 
     public CredentialStore(RunnerOptions options)
     {
-        var raw = options.CredentialsPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+        var raw = options.CredentialsPath.Replace(
+            "~",
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+        );
         _path = raw;
     }
 
@@ -34,8 +37,7 @@ public sealed class CredentialStore
         var json = JsonSerializer.Serialize(creds);
         await File.WriteAllTextAsync(_path, json);
 
-        File.SetUnixFileMode(_path,
-            UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        File.SetUnixFileMode(_path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
     }
 
     public bool Exists() => File.Exists(_path);

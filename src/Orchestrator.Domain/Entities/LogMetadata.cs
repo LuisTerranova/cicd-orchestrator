@@ -30,7 +30,7 @@ public class LogMetadata : Entity
             FilePath = filePath,
             LineCount = lineCount,
             SizeBytes = sizeBytes,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
     }
 
@@ -45,4 +45,3 @@ public class LogMetadata : Entity
         SizeBytes = sizeBytes;
     }
 }
-

@@ -1,6 +1,4 @@
-using Orchestrator.Domain;
-
-namespace Orchestrator.Application.Common;
+namespace Orchestrator.Domain.Interfaces;
 
 public interface IDomainEventDispatcher
 {

@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using Orchestrator.Runner.Configuration;
 using Orchestrator.Runner.Container;
 using Orchestrator.Runner.Execution;
-using Orchestrator.Runner.Registration;
 using Orchestrator.Runner.Reconciliation;
+using Orchestrator.Runner.Registration;
 using Orchestrator.Runner.WebSocket;
 
 namespace Orchestrator.Runner.Agent;
@@ -32,7 +32,8 @@ public sealed class RunnerAgent : IHostedLifecycleService
         ServerWebSocketClient webSocket,
         Reconciliator reconciliator,
         ContainerCleanupService cleanup,
-        ILogger<RunnerAgent> logger)
+        ILogger<RunnerAgent> logger
+    )
     {
         _options = options;
         _state = state;
@@ -45,14 +46,19 @@ public sealed class RunnerAgent : IHostedLifecycleService
     }
 
     public async Task StartingAsync(CancellationToken ct) { }
+
     public async Task StartedAsync(CancellationToken ct) { }
+
     public async Task StoppedAsync(CancellationToken ct) { }
 
     public async Task StartAsync(CancellationToken ct)
     {
         // Step 1: Register or load existing credentials
-        _logger.LogInformation("Runner starting — name: {Name}, concurrency: {Concurrency}",
-            _options.Name, _options.Concurrency);
+        _logger.LogInformation(
+            "Runner starting — name: {Name}, concurrency: {Concurrency}",
+            _options.Name,
+            _options.Concurrency
+        );
 
         if (_credentialStore.Exists())
         {
@@ -95,7 +101,9 @@ public sealed class RunnerAgent : IHostedLifecycleService
         {
             await _webSocket.CloseAsync(
                 System.Net.WebSockets.WebSocketCloseStatus.NormalClosure,
-                "shutdown", ct);
+                "shutdown",
+                ct
+            );
         }
         catch
         {

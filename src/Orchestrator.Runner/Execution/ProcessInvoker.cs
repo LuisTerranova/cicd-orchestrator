@@ -12,7 +12,7 @@ public sealed class ProcessInvoker
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
 
         foreach (var arg in args)
@@ -45,8 +45,4 @@ public sealed class ProcessInvoker
     }
 }
 
-public sealed record ProcessResult(
-    int ExitCode,
-    string Stdout,
-    string Stderr
-);
+public sealed record ProcessResult(int ExitCode, string Stdout, string Stderr);

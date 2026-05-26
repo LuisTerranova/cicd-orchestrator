@@ -3,30 +3,26 @@ using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Application.Runners;
 
-public sealed class RegisterRunnerHandler
+public sealed class RegisterRunnerHandler(
+    IRunnerRepository runners,
+    IDomainEventDispatcher eventDispatcher
+) : ICommandHandler<RegisterRunnerCommand, Guid>
 {
-    private readonly IRunnerRepository _runners;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IDomainEventDispatcher _eventDispatcher;
-
-    public RegisterRunnerHandler(
-        IRunnerRepository runners,
-        IUnitOfWork unitOfWork,
-        IDomainEventDispatcher eventDispatcher)
+    public async Task<Guid> HandleAsync(
+        RegisterRunnerCommand command,
+        CancellationToken ct = default
+    )
     {
-        _runners = runners;
-        _unitOfWork = unitOfWork;
-        _eventDispatcher = eventDispatcher;
-    }
-
-    public async Task<Guid> HandleAsync(RegisterRunnerCommand command, CancellationToken ct = default)
-    {
-        var runner = Domain.Entities.Runner.Create(command.Name, command.Labels, command.Os, command.Arch);
+        var runner = Domain.Entities.Runner.Create(
+            command.Name,
+            command.Labels,
+            command.Os,
+            command.Arch
+        );
         runner.Register();
-        await _runners.AddAsync(runner, ct);
-        await _eventDispatcher.DispatchAsync(runner.DomainEvents, ct);
+        await runners.AddAsync(runner, ct);
+        await eventDispatcher.DispatchAsync(runner.DomainEvents, ct);
         runner.ClearDomainEvents();
-        await _unitOfWork.SaveChangesAsync(ct);
         return runner.Id;
     }
 }

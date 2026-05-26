@@ -16,7 +16,8 @@ public sealed class ServerWebSocketClient : IAsyncDisposable
     public ServerWebSocketClient(
         RunnerOptions options,
         CredentialStore credentials,
-        ILogger<ServerWebSocketClient> logger)
+        ILogger<ServerWebSocketClient> logger
+    )
     {
         _options = options;
         _credentials = credentials;
@@ -50,8 +51,11 @@ public sealed class ServerWebSocketClient : IAsyncDisposable
             }
             catch when (!ct.IsCancellationRequested)
             {
-                _logger.LogWarning("WebSocket connect attempt {Attempt} failed, retrying in {Delay}s",
-                    attempt, delay.TotalSeconds);
+                _logger.LogWarning(
+                    "WebSocket connect attempt {Attempt} failed, retrying in {Delay}s",
+                    attempt,
+                    delay.TotalSeconds
+                );
                 await Task.Delay(delay, ct);
                 delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, maxDelaySec));
             }
@@ -79,7 +83,11 @@ public sealed class ServerWebSocketClient : IAsyncDisposable
     }
 
     // Closes the WebSocket gracefully if open, then disposes the underlying instance.
-    public async Task CloseAsync(WebSocketCloseStatus status, string description, CancellationToken ct)
+    public async Task CloseAsync(
+        WebSocketCloseStatus status,
+        string description,
+        CancellationToken ct
+    )
     {
         if (_ws?.State == WebSocketState.Open)
         {

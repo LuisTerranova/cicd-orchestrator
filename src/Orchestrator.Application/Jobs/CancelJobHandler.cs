@@ -3,30 +3,17 @@ using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Application.Jobs;
 
-public sealed class CancelJobHandler
+public sealed class CancelJobHandler(IJobRepository jobs, IDomainEventDispatcher eventDispatcher)
+    : ICommandHandler<CancelJobCommand>
 {
-    private readonly IJobRepository _jobs;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IDomainEventDispatcher _eventDispatcher;
-
-    public CancelJobHandler(
-        IJobRepository jobs,
-        IUnitOfWork unitOfWork,
-        IDomainEventDispatcher eventDispatcher)
-    {
-        _jobs = jobs;
-        _unitOfWork = unitOfWork;
-        _eventDispatcher = eventDispatcher;
-    }
-
     public async Task HandleAsync(CancelJobCommand command, CancellationToken ct = default)
     {
-        var job = await _jobs.GetByIdAsync(command.JobId, ct)
+        var job =
+            await jobs.GetByIdAsync(command.JobId, ct)
             ?? throw new InvalidOperationException($"Job {command.JobId} not found");
 
         job.Cancel(command.Reason);
-        await _eventDispatcher.DispatchAsync(job.DomainEvents, ct);
+        await eventDispatcher.DispatchAsync(job.DomainEvents, ct);
         job.ClearDomainEvents();
-        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

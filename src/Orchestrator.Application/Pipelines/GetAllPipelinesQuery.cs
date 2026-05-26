@@ -1,16 +1,13 @@
+using Orchestrator.Domain.Common;
 using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Application.Pipelines;
 
-public sealed class GetAllPipelinesQuery
+public sealed class GetAllPipelinesQuery(IPipelineRepository pipelines)
 {
-    private readonly IPipelineRepository _pipelines;
-
-    public GetAllPipelinesQuery(IPipelineRepository pipelines)
-    {
-        _pipelines = pipelines;
-    }
-
-    public async Task<IReadOnlyCollection<Domain.Entities.Pipeline>> HandleAsync(CancellationToken ct = default)
-        => await _pipelines.GetAllAsync(ct);
+    public async Task<PagedResult<Domain.Entities.Pipeline>> HandleAsync(
+        int page,
+        int pageSize,
+        CancellationToken ct = default
+    ) => await pipelines.GetPagedAsync(page, pageSize, ct);
 }

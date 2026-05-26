@@ -14,6 +14,7 @@ public class HmacWebhookSignatureValidator : IWebhookSignatureValidator
         var computed = Convert.ToHexStringLower(hash);
         return CryptographicOperations.FixedTimeEquals(
             Encoding.UTF8.GetBytes(computed),
-            Encoding.UTF8.GetBytes(signature));
+            Encoding.UTF8.GetBytes(signature)
+        );
     }
 }

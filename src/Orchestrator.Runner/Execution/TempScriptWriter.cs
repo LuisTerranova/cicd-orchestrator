@@ -16,13 +16,17 @@ public sealed class TempScriptWriter
         {
             "bash" => "#!/bin/bash",
             "pwsh" => "#!/usr/bin/env pwsh",
-            _      => "#!/bin/sh"
+            _ => "#!/bin/sh",
         };
 
         File.WriteAllText(scriptPath, $"{shebang}\nset -e\n{step.Run}\n");
-        File.SetUnixFileMode(scriptPath,
-            UnixFileMode.UserRead | UnixFileMode.UserExecute |
-            UnixFileMode.GroupRead | UnixFileMode.GroupExecute);
+        File.SetUnixFileMode(
+            scriptPath,
+            UnixFileMode.UserRead
+                | UnixFileMode.UserExecute
+                | UnixFileMode.GroupRead
+                | UnixFileMode.GroupExecute
+        );
 
         return scriptPath;
     }

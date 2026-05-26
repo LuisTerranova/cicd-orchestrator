@@ -8,5 +8,5 @@ public enum JobStatus
     Passed,
     Failed,
     Cancelled,
-    Skipped
+    Skipped,
 }

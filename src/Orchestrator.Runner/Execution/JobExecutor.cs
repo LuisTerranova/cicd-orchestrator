@@ -27,7 +27,8 @@ public sealed class JobExecutor
         LogCapturer logCapturer,
         RunnerOptions options,
         CredentialStore credentials,
-        ILogger<JobExecutor> logger)
+        ILogger<JobExecutor> logger
+    )
     {
         _state = state;
         _stepRunner = stepRunner;
@@ -61,7 +62,15 @@ public sealed class JobExecutor
             var cloneResult = await CloneRepository(job, workspacePath, ct);
             if (cloneResult.ExitCode != 0)
             {
-                return BuildResult(job, startedAt, "failed", cloneResult.ExitCode, [], [], cloneResult.Stderr);
+                return BuildResult(
+                    job,
+                    startedAt,
+                    "failed",
+                    cloneResult.ExitCode,
+                    [],
+                    [],
+                    cloneResult.Stderr
+                );
             }
 
             _logCapturer.StartCapture(job.JobId, job.Secrets);
@@ -70,17 +79,29 @@ public sealed class JobExecutor
             {
                 // Per-step timeout linkage: job-level timeout + external cancellation.
                 using var timeoutCts = new CancellationTokenSource(job.Timeout);
-                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                    ct,
+                    timeoutCts.Token
+                );
 
                 _logger.LogInformation("Running step {StepName}", step.Name);
                 _logCapturer.CaptureLine(job.JobId, "step", $"Starting step '{step.Name}'");
 
                 var stepResult = await _stepRunner.RunStepAsync(
-                    step, job.JobId, workspacePath, job.Secrets, job.Image, linkedCts.Token);
+                    step,
+                    job.JobId,
+                    workspacePath,
+                    job.Secrets,
+                    job.Image,
+                    linkedCts.Token
+                );
 
                 stepResults.Add(stepResult);
-                _logCapturer.CaptureLine(job.JobId, "step",
-                    $"Step '{step.Name}': {stepResult.Status} (exit code {stepResult.ExitCode})");
+                _logCapturer.CaptureLine(
+                    job.JobId,
+                    "step",
+                    $"Step '{step.Name}': {stepResult.Status} (exit code {stepResult.ExitCode})"
+                );
 
                 if (stepResult.ExitCode != 0)
                 {
@@ -94,20 +115,41 @@ public sealed class JobExecutor
             var overallStatus = stepResults.Any(s => s.ExitCode != 0) ? "failed" : "passed";
             var exitCode = stepResults.Count > 0 ? stepResults[^1].ExitCode : 0;
 
-            return BuildResult(job, startedAt, overallStatus, exitCode,
-                [.. stepResults], [.. artifacts], null);
+            return BuildResult(
+                job,
+                startedAt,
+                overallStatus,
+                exitCode,
+                [.. stepResults],
+                [.. artifacts],
+                null
+            );
         }
         catch (OperationCanceledException)
         {
             _logger.LogWarning("Job {JobId} was cancelled", job.JobId);
-            return BuildResult(job, startedAt, "cancelled", -1,
-                [.. stepResults], [.. artifacts], "Job was cancelled");
+            return BuildResult(
+                job,
+                startedAt,
+                "cancelled",
+                -1,
+                [.. stepResults],
+                [.. artifacts],
+                "Job was cancelled"
+            );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Job {JobId} failed", job.JobId);
-            return BuildResult(job, startedAt, "failed", -1,
-                [.. stepResults], [.. artifacts], ex.Message);
+            return BuildResult(
+                job,
+                startedAt,
+                "failed",
+                -1,
+                [.. stepResults],
+                [.. artifacts],
+                ex.Message
+            );
         }
         finally
         {
@@ -128,17 +170,23 @@ public sealed class JobExecutor
         }
     }
 
-    private async Task<ProcessResult> CloneRepository(JobQueued job, string workspacePath, CancellationToken ct)
+    private async Task<ProcessResult> CloneRepository(
+        JobQueued job,
+        string workspacePath,
+        CancellationToken ct
+    )
     {
         _logger.LogInformation("Cloning {Repo} @ {Ref}", job.RepoUrl, job.Ref);
 
         var args = new List<string>
         {
             "clone",
-            "--depth", job.CloneDepth.ToString(),
-            "--branch", job.Ref,
+            "--depth",
+            job.CloneDepth.ToString(),
+            "--branch",
+            job.Ref,
             job.RepoUrl,
-            workspacePath
+            workspacePath,
         };
 
         var result = await _process.RunAsync("git", [.. args], ct);
@@ -148,14 +196,21 @@ public sealed class JobExecutor
         if (!string.IsNullOrEmpty(job.CommitSha))
         {
             _logger.LogInformation("Checking out {Sha}", job.CommitSha);
-            result = await _process.RunAsync("git",
-                ["-C", workspacePath, "checkout", job.CommitSha], ct);
+            result = await _process.RunAsync(
+                "git",
+                ["-C", workspacePath, "checkout", job.CommitSha],
+                ct
+            );
         }
 
         return result;
     }
 
-    private async Task<List<ArtifactInfo>> UploadArtifacts(Guid buildId, string workspacePath, CancellationToken ct)
+    private async Task<List<ArtifactInfo>> UploadArtifacts(
+        Guid buildId,
+        string workspacePath,
+        CancellationToken ct
+    )
     {
         var artifacts = new List<ArtifactInfo>();
 
@@ -168,8 +223,9 @@ public sealed class JobExecutor
             {
                 await _artifactUploader.UploadAsync(buildId, file, ct);
                 var info = new FileInfo(file);
-                artifacts.Add(new ArtifactInfo(
-                    Path.GetRelativePath(workspacePath, file), file, info.Length));
+                artifacts.Add(
+                    new ArtifactInfo(Path.GetRelativePath(workspacePath, file), file, info.Length)
+                );
             }
             catch (Exception ex)
             {
@@ -181,8 +237,15 @@ public sealed class JobExecutor
     }
 
     // Loads the runner ID from credential store to populate the JobCompleted record.
-    private JobCompleted BuildResult(JobQueued job, DateTime startedAt, string status, int exitCode,
-        JobStepResult[] steps, ArtifactInfo[] artifacts, string? error)
+    private JobCompleted BuildResult(
+        JobQueued job,
+        DateTime startedAt,
+        string status,
+        int exitCode,
+        JobStepResult[] steps,
+        ArtifactInfo[] artifacts,
+        string? error
+    )
     {
         var creds = _credentials.LoadAsync().GetAwaiter().GetResult();
         var runnerId = creds?.RunnerId ?? string.Empty;
@@ -199,6 +262,7 @@ public sealed class JobExecutor
             completedAt - startedAt,
             steps,
             artifacts,
-            error);
+            error
+        );
     }
 }

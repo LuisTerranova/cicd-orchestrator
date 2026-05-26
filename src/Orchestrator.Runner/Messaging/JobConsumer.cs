@@ -13,8 +13,12 @@ public sealed class JobConsumer : IConsumer<JobQueued>
     private readonly JobResultPublisher _publisher;
     private readonly ILogger<JobConsumer> _logger;
 
-    public JobConsumer(RunnerState state, JobExecutor executor,
-        JobResultPublisher publisher, ILogger<JobConsumer> logger)
+    public JobConsumer(
+        RunnerState state,
+        JobExecutor executor,
+        JobResultPublisher publisher,
+        ILogger<JobConsumer> logger
+    )
     {
         _state = state;
         _executor = executor;
@@ -33,8 +37,12 @@ public sealed class JobConsumer : IConsumer<JobQueued>
         }
 
         _state.SetActiveJob(job.JobId);
-        _logger.LogInformation("Starting job {JobId} ({Pipeline}/{Stage})",
-            job.JobId, job.PipelineName, job.StageName);
+        _logger.LogInformation(
+            "Starting job {JobId} ({Pipeline}/{Stage})",
+            job.JobId,
+            job.PipelineName,
+            job.StageName
+        );
 
         try
         {

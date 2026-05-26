@@ -36,3 +36,10 @@ credentials.json
 
 # Graphify generated artifacts
 **/graphify-out/
+
+# IDE/Tool generated artifacts
+.cache/
+.dotnet/
+.local/
+.nuget/
+dotnet-tools.json

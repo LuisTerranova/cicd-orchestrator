@@ -29,7 +29,7 @@ public class Job : Entity
             BuildId = buildId,
             StageName = stageName,
             Status = JobStatus.Pending,
-            Version = version
+            Version = version,
         };
     }
 

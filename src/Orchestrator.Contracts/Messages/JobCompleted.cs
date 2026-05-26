@@ -14,15 +14,6 @@ public sealed record JobCompleted(
     string? ErrorMessage
 );
 
-public sealed record JobStepResult(
-    string Name,
-    string Status,
-    int ExitCode,
-    TimeSpan Duration
-);
+public sealed record JobStepResult(string Name, string Status, int ExitCode, TimeSpan Duration);
 
-public sealed record ArtifactInfo(
-    string Name,
-    string Path,
-    long SizeBytes
-);
+public sealed record ArtifactInfo(string Name, string Path, long SizeBytes);

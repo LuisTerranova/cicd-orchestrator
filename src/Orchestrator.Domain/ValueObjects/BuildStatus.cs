@@ -7,5 +7,5 @@ public enum BuildStatus
     Passed,
     Failed,
     Cancelled,
-    PassedWithWarnings
+    PassedWithWarnings,
 }

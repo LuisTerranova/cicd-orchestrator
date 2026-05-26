@@ -3,36 +3,24 @@ using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Application.Jobs;
 
-public sealed class AssignJobHandler
+public sealed class AssignJobHandler(
+    IJobRepository jobs,
+    IRunnerRepository runners,
+    IDomainEventDispatcher eventDispatcher
+) : ICommandHandler<AssignJobCommand>
 {
-    private readonly IJobRepository _jobs;
-    private readonly IRunnerRepository _runners;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IDomainEventDispatcher _eventDispatcher;
-
-    public AssignJobHandler(
-        IJobRepository jobs,
-        IRunnerRepository runners,
-        IUnitOfWork unitOfWork,
-        IDomainEventDispatcher eventDispatcher)
-    {
-        _jobs = jobs;
-        _runners = runners;
-        _unitOfWork = unitOfWork;
-        _eventDispatcher = eventDispatcher;
-    }
-
     public async Task HandleAsync(AssignJobCommand command, CancellationToken ct = default)
     {
-        var job = await _jobs.GetByIdAsync(command.JobId, ct)
+        var job =
+            await jobs.GetByIdAsync(command.JobId, ct)
             ?? throw new InvalidOperationException($"Job {command.JobId} not found");
-        var runner = await _runners.GetByIdAsync(command.RunnerId, ct)
+        var runner =
+            await runners.GetByIdAsync(command.RunnerId, ct)
             ?? throw new InvalidOperationException($"Runner {command.RunnerId} not found");
 
         job.AssignTo(runner);
         runner.GoBusy();
-        await _eventDispatcher.DispatchAsync(job.DomainEvents, ct);
+        await eventDispatcher.DispatchAsync(job.DomainEvents, ct);
         job.ClearDomainEvents();
-        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

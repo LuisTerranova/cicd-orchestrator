@@ -19,7 +19,11 @@ public sealed class CancellationConsumer : IConsumer<JobCancelled>
     public async Task Consume(ConsumeContext<JobCancelled> context)
     {
         var msg = context.Message;
-        _logger.LogInformation("Cancellation requested for job {JobId}: {Reason}", msg.JobId, msg.Reason);
+        _logger.LogInformation(
+            "Cancellation requested for job {JobId}: {Reason}",
+            msg.JobId,
+            msg.Reason
+        );
         _state.CancelJob(msg.JobId);
     }
 }

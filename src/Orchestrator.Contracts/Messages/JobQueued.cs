@@ -29,8 +29,4 @@ public sealed record JobStep(
     string Shell
 );
 
-public sealed record RegistryAuth(
-    string Server,
-    string Username,
-    string Password
-);
+public sealed record RegistryAuth(string Server, string Username, string Password);

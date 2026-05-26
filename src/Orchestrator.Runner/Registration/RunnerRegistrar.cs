@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Runtime.InteropServices;
-using Orchestrator.Runner.Configuration;
 using Orchestrator.Runner.Cli;
+using Orchestrator.Runner.Configuration;
 
 namespace Orchestrator.Runner.Registration;
 
@@ -16,7 +16,10 @@ public sealed class RunnerRegistrar
         _options = options;
     }
 
-    public async Task<(string RunnerId, string Secret)> RegisterAsync(string? token, CancellationToken ct)
+    public async Task<(string RunnerId, string Secret)> RegisterAsync(
+        string? token,
+        CancellationToken ct
+    )
     {
         var payload = new
         {
@@ -24,7 +27,7 @@ public sealed class RunnerRegistrar
             runnerName = _options.Name,
             labels = _options.Labels,
             os = RuntimeInformation.OSDescription,
-            arch = RuntimeInformation.OSArchitecture.ToString()
+            arch = RuntimeInformation.OSArchitecture.ToString(),
         };
 
         var maxRetries = 3;

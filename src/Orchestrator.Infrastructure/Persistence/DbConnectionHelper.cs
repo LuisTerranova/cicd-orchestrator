@@ -10,7 +10,10 @@ public static class DbConnectionHelper
         if (string.IsNullOrEmpty(connectionStringOrUri))
             return connectionStringOrUri;
 
-        if (!connectionStringOrUri.StartsWith("postgresql://") && !connectionStringOrUri.StartsWith("postgres://"))
+        if (
+            !connectionStringOrUri.StartsWith("postgresql://")
+            && !connectionStringOrUri.StartsWith("postgres://")
+        )
             return connectionStringOrUri;
 
         try
@@ -19,7 +22,7 @@ public static class DbConnectionHelper
             var userInfo = uri.UserInfo.Split(':', 2);
             var username = userInfo[0];
             var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
-            
+
             var host = uri.Host;
             var port = uri.Port != -1 ? uri.Port : 5432;
             var database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/'));
@@ -30,7 +33,7 @@ public static class DbConnectionHelper
                 Port = port,
                 Database = database,
                 Username = username,
-                Password = password
+                Password = password,
             };
 
             // Parse query parameters (e.g. sslmode)
@@ -45,7 +48,7 @@ public static class DbConnectionHelper
                     {
                         var key = kv[0].Trim();
                         var val = Uri.UnescapeDataString(kv[1].Trim());
-                        
+
                         if (key.Equals("sslmode", StringComparison.OrdinalIgnoreCase))
                         {
                             if (val.Equals("require", StringComparison.OrdinalIgnoreCase))

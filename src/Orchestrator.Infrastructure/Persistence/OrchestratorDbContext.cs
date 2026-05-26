@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Orchestrator.Domain.Entities;
-using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Infrastructure.Persistence;
 
-public class OrchestratorDbContext : DbContext, IUnitOfWork
+public class OrchestratorDbContext : DbContext
 {
-    public OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> options) : base(options) { }
+    public OrchestratorDbContext(DbContextOptions<OrchestratorDbContext> options)
+        : base(options) { }
 
     public DbSet<Pipeline> Pipelines => Set<Pipeline>();
     public DbSet<Build> Builds => Set<Build>();
@@ -20,6 +20,6 @@ public class OrchestratorDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrchestratorDbContext).Assembly);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken ct = default)
-        => base.SaveChangesAsync(ct);
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default) =>
+        base.SaveChangesAsync(ct);
 }

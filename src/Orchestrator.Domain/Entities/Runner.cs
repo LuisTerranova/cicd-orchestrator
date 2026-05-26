@@ -29,7 +29,7 @@ public class Runner : Entity
             Os = os ?? string.Empty,
             Arch = arch ?? string.Empty,
             Status = RunnerStatus.Offline,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
     }
 

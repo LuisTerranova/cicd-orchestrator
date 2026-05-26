@@ -19,7 +19,12 @@ public class Build : Entity
 
     private Build() { }
 
-    public static Build Create(Guid pipelineId, string triggerEvent, string commitSha, int priority = 0)
+    public static Build Create(
+        Guid pipelineId,
+        string triggerEvent,
+        string commitSha,
+        int priority = 0
+    )
     {
         if (pipelineId == Guid.Empty)
             throw new DomainException("PipelineId cannot be empty.");
@@ -36,7 +41,7 @@ public class Build : Entity
             CommitSha = commitSha,
             Status = BuildStatus.Queued,
             CreatedAt = DateTime.UtcNow,
-            Priority = priority
+            Priority = priority,
         };
     }
 
@@ -51,8 +56,14 @@ public class Build : Entity
 
     public void Complete(BuildStatus finalStatus)
     {
-        if (finalStatus != BuildStatus.Passed && finalStatus != BuildStatus.Failed && finalStatus != BuildStatus.PassedWithWarnings)
-            throw new DomainException("Build can only complete with Passed, Failed, or PassedWithWarnings status.");
+        if (
+            finalStatus != BuildStatus.Passed
+            && finalStatus != BuildStatus.Failed
+            && finalStatus != BuildStatus.PassedWithWarnings
+        )
+            throw new DomainException(
+                "Build can only complete with Passed, Failed, or PassedWithWarnings status."
+            );
 
         Status = finalStatus;
         CompletedAt = DateTime.UtcNow;

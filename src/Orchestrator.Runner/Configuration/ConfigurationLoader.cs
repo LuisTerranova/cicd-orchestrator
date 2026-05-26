@@ -22,7 +22,8 @@ public sealed class ConfigurationLoader
             if (yamlConfig.Server is not null)
             {
                 options.ServerUrl = yamlConfig.Server.Url ?? options.ServerUrl;
-                options.CredentialsPath = yamlConfig.Server.CredentialsPath ?? options.CredentialsPath;
+                options.CredentialsPath =
+                    yamlConfig.Server.CredentialsPath ?? options.CredentialsPath;
                 options.EncryptionKey = yamlConfig.Server.EncryptionKey ?? options.EncryptionKey;
             }
 
@@ -33,7 +34,8 @@ public sealed class ConfigurationLoader
                     options.Labels = yamlConfig.Runner.Labels;
                 options.WorkspacePath = yamlConfig.Runner.WorkspacePath ?? options.WorkspacePath;
                 options.Concurrency = yamlConfig.Runner.Concurrency ?? options.Concurrency;
-                options.ContainerRuntime = yamlConfig.Runner.ContainerRuntime ?? options.ContainerRuntime;
+                options.ContainerRuntime =
+                    yamlConfig.Runner.ContainerRuntime ?? options.ContainerRuntime;
                 if (yamlConfig.Runner.HeartbeatInterval.HasValue)
                     options.HeartbeatInterval = yamlConfig.Runner.HeartbeatInterval.Value;
                 if (yamlConfig.Runner.CleanupInterval.HasValue)
@@ -51,14 +53,20 @@ public sealed class ConfigurationLoader
         if (GetEnv("RUNNER_NAME") is { } envName)
             options.Name = envName;
         if (GetEnv("RUNNER_LABELS") is { } envLabels)
-            options.Labels = envLabels.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            options.Labels = envLabels.Split(
+                ',',
+                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries
+            );
         if (GetEnv("RUNNER_WORKSPACE_PATH") is { } envWs)
             options.WorkspacePath = envWs;
         if (GetEnv("RUNNER_CONCURRENCY") is { } envConc && int.TryParse(envConc, out var conc))
             options.Concurrency = conc;
         if (GetEnv("RUNNER_CONTAINER_RUNTIME") is { } envRt)
             options.ContainerRuntime = envRt;
-        if (GetEnv("RUNNER_HEARTBEAT_INTERVAL") is { } envHbi && TimeSpan.TryParse(envHbi, out var hbi))
+        if (
+            GetEnv("RUNNER_HEARTBEAT_INTERVAL") is { } envHbi
+            && TimeSpan.TryParse(envHbi, out var hbi)
+        )
             options.HeartbeatInterval = hbi;
 
         // 4. Overlay CLI flags (already handled by CliRootCommand — applied externally)

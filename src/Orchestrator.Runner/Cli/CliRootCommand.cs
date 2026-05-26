@@ -59,7 +59,6 @@ public sealed record CliParseResult
 
     public bool HasOption(string name)
     {
-        return _options.TryGetValue(name, out var opt)
-            && _result.GetResult(opt) is not null;
+        return _options.TryGetValue(name, out var opt) && _result.GetResult(opt) is not null;
     }
 }

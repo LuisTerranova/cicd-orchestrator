@@ -1,41 +1,74 @@
 using Orchestrator.Api.Extensions;
 using Orchestrator.Application.Builds;
+using Orchestrator.Application.Common;
 
 namespace Orchestrator.Api.Endpoints;
 
-public static class BuildsEndpoints
+public class BuildsEndpoints : IEndpoint
 {
-    public static void MapBuildsEndpoints(this IEndpointRouteBuilder app)
+    public static void Map(IEndpointRouteBuilder app)
     {
-        // GET /api/builds/{id:guid} - Retrieve build details by ID
-        app.MapGet("/api/builds/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
-        {
-            var query = http.RequestServices.GetRequiredService<GetBuildByIdQuery>();
-            var build = await query.HandleAsync(id, ct);
-            if (build == null)
-                return Results.NotFound();
+        var group = app.MapGroup("/api/builds").WithTags("Builds");
 
-            var response = new BuildResponse(build.Id, build.PipelineId, build.Status.ToString(), build.CreatedAt, build.CompletedAt);
-            return Results.Ok(response);
-        });
+        group.MapGet("/{id:guid}", GetBuildByIdAsync);
+        group.MapPost("/", TriggerBuildAsync);
 
-        // GET /api/pipelines/{pipelineId:guid}/builds - Retrieve all builds for a pipeline
-        app.MapGet("/api/pipelines/{pipelineId:guid}/builds", async (Guid pipelineId, HttpContext http, CancellationToken ct) =>
-        {
-            var query = http.RequestServices.GetRequiredService<GetBuildsByPipelineIdQuery>();
-            var builds = await query.HandleAsync(pipelineId, ct);
-            var response = builds.Select(b => new BuildResponse(b.Id, b.PipelineId, b.Status.ToString(), b.CreatedAt, b.CompletedAt)).ToArray();
-            return Results.Ok(response);
-        });
+        app.MapGet("/api/pipelines/{pipelineId:guid}/builds", GetBuildsByPipelineAsync)
+            .WithTags("Builds");
+    }
 
-        // POST /api/builds - Trigger a new build for a pipeline
-        app.MapPost("/api/builds", async (BuildTriggerRequest request, HttpContext http, CancellationToken ct) =>
-        {
-            var handler = http.RequestServices.GetRequiredService<TriggerBuildHandler>();
-            var command = new TriggerBuildCommand(request.PipelineId, request.TriggerEvent, request.CommitSha, request.Priority);
-            var id = await handler.HandleAsync(command, ct);
-            return Results.Created($"/api/builds/{id}", new { id });
-        });
+    private static async Task<IResult> GetBuildByIdAsync(
+        Guid id,
+        GetBuildByIdQuery getBuildByIdQuery,
+        CancellationToken ct
+    )
+    {
+        var build = await getBuildByIdQuery.HandleAsync(id, ct);
+        if (build == null)
+            return Results.NotFound();
+
+        var response = new BuildResponse(
+            build.Id,
+            build.PipelineId,
+            build.Status.ToString(),
+            build.CreatedAt,
+            build.CompletedAt
+        );
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> GetBuildsByPipelineAsync(
+        Guid pipelineId,
+        GetBuildsByPipelineIdQuery getBuildsByPipelineIdQuery,
+        CancellationToken ct
+    )
+    {
+        var builds = await getBuildsByPipelineIdQuery.HandleAsync(pipelineId, ct);
+        var response = builds
+            .Select(b => new BuildResponse(
+                b.Id,
+                b.PipelineId,
+                b.Status.ToString(),
+                b.CreatedAt,
+                b.CompletedAt
+            ))
+            .ToArray();
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> TriggerBuildAsync(
+        BuildTriggerRequest request,
+        ICommandHandler<TriggerBuildCommand, Guid> triggerBuildHandler,
+        CancellationToken ct
+    )
+    {
+        var command = new TriggerBuildCommand(
+            request.PipelineId,
+            request.TriggerEvent,
+            request.CommitSha,
+            request.Priority
+        );
+        var id = await triggerBuildHandler.HandleAsync(command, ct);
+        return Results.Created($"/api/builds/{id}", new { id });
     }
 }
-

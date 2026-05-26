@@ -12,6 +12,10 @@ public class LogMetadataConfiguration : IEntityTypeConfiguration<LogMetadata>
         builder.HasKey(l => l.Id);
         builder.Property(l => l.FilePath).IsRequired().HasMaxLength(1024);
         builder.Property(l => l.CreatedAt).IsRequired();
-        builder.HasOne<Job>().WithOne().HasForeignKey<LogMetadata>(l => l.JobId).OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne<Job>()
+            .WithOne()
+            .HasForeignKey<LogMetadata>(l => l.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

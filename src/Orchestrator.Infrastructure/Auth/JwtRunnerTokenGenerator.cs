@@ -6,7 +6,8 @@ namespace Orchestrator.Infrastructure.Auth;
 
 public class JwtRunnerTokenGenerator : IRunnerTokenGenerator
 {
-    private const string SecretKey = "c3VwZXItc2VjcmV0LWtleS1mb3ItZGV2ZWxvcG1lbnQtcHVycG9zZXMtb25seQ==";
+    private const string SecretKey =
+        "c3VwZXItc2VjcmV0LWtleS1mb3ItZGV2ZWxvcG1lbnQtcHVycG9zZXMtb25seQ==";
 
     public string GenerateToken(Guid runnerId)
     {

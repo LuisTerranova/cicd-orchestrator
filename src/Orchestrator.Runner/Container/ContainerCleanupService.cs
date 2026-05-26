@@ -16,7 +16,8 @@ public sealed class ContainerCleanupService : BackgroundService
         PodmanCli podman,
         RunnerState state,
         RunnerOptions options,
-        ILogger<ContainerCleanupService> logger)
+        ILogger<ContainerCleanupService> logger
+    )
     {
         _podman = podman;
         _state = state;

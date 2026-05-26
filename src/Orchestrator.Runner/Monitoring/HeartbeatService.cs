@@ -11,8 +11,11 @@ public sealed class HeartbeatService : BackgroundService
     private readonly TimeSpan _interval;
     private readonly ILogger<HeartbeatService> _logger;
 
-    public HeartbeatService(ServerWebSocketClient ws, RunnerOptions options,
-        ILogger<HeartbeatService> logger)
+    public HeartbeatService(
+        ServerWebSocketClient ws,
+        RunnerOptions options,
+        ILogger<HeartbeatService> logger
+    )
     {
         _ws = ws;
         _interval = options.HeartbeatInterval;

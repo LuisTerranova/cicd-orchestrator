@@ -21,17 +21,26 @@ public sealed class PodmanCli
         var args = new List<string>
         {
             "create",
-            "--name", spec.ContainerName,
-            "--volume", $"{spec.WorkspacePath}:/workspace:rw",
-            "--volume", $"{spec.SecretsPath}:/run/secrets:ro",
-            "--network", spec.NetworkMode,
-            "--memory", spec.MemoryLimit,
-            "--cpus", spec.CpuLimit,
+            "--name",
+            spec.ContainerName,
+            "--volume",
+            $"{spec.WorkspacePath}:/workspace:rw",
+            "--volume",
+            $"{spec.SecretsPath}:/run/secrets:ro",
+            "--network",
+            spec.NetworkMode,
+            "--memory",
+            spec.MemoryLimit,
+            "--cpus",
+            spec.CpuLimit,
             "--read-only-rootfs",
-            "--security-opt", "no-new-privileges:true",
-            "--cap-drop", "ALL",
-            "--label", $"orchestrator.job_id={spec.JobId}",
-            image
+            "--security-opt",
+            "no-new-privileges:true",
+            "--cap-drop",
+            "ALL",
+            "--label",
+            $"orchestrator.job_id={spec.JobId}",
+            image,
         };
 
         if (spec.EnvVars is { Count: > 0 })
@@ -47,17 +56,28 @@ public sealed class PodmanCli
         await _process.RunAsync("podman", ["start", containerId], ct);
     }
 
-    public async Task<int> ExecAsync(string containerId, string shell, string scriptPath, CancellationToken ct)
+    public async Task<int> ExecAsync(
+        string containerId,
+        string shell,
+        string scriptPath,
+        CancellationToken ct
+    )
     {
-        var result = await _process.RunAsync("podman",
-            ["exec", "-i", containerId, shell, scriptPath], ct);
+        var result = await _process.RunAsync(
+            "podman",
+            ["exec", "-i", containerId, shell, scriptPath],
+            ct
+        );
         return result.ExitCode;
     }
 
     public async Task StopAsync(string containerId, TimeSpan gracePeriod, CancellationToken ct)
     {
-        await _process.RunAsync("podman",
-            ["stop", "--time", ((int)gracePeriod.TotalSeconds).ToString(), containerId], ct);
+        await _process.RunAsync(
+            "podman",
+            ["stop", "--time", ((int)gracePeriod.TotalSeconds).ToString(), containerId],
+            ct
+        );
     }
 
     public async Task RemoveAsync(string containerId, CancellationToken ct)
@@ -67,11 +87,21 @@ public sealed class PodmanCli
 
     public async Task<List<string>> ListOrphanedAsync(Guid[] activeJobIds, CancellationToken ct)
     {
-        var result = await _process.RunAsync("podman",
-            ["ps", "-a", "--filter", "label=orchestrator.job_id", "--format", "{{.ID}} {{.Label \"orchestrator.job_id\"}}"], ct);
+        var result = await _process.RunAsync(
+            "podman",
+            [
+                "ps",
+                "-a",
+                "--filter",
+                "label=orchestrator.job_id",
+                "--format",
+                "{{.ID}} {{.Label \"orchestrator.job_id\"}}",
+            ],
+            ct
+        );
 
-        return result.Stdout
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+        return result
+            .Stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(line => line.Split(' ', 2))
             .Where(parts => parts.Length == 2 && !activeJobIds.Contains(Guid.Parse(parts[1])))
             .Select(parts => parts[0])
@@ -93,5 +123,6 @@ public sealed record ContainerSpec(
 
 public sealed class PodmanException : Exception
 {
-    public PodmanException(string message) : base(message) { }
+    public PodmanException(string message)
+        : base(message) { }
 }

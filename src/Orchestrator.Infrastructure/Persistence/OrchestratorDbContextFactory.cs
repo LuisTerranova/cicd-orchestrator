@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System;
-using System.IO;
 
 namespace Orchestrator.Infrastructure.Persistence;
 
@@ -43,7 +41,8 @@ public class OrchestratorDbContextFactory : IDesignTimeDbContextFactory<Orchestr
             }
         }
 
-        var connStr = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+        var connStr =
+            Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
             ?? "Host=localhost;Database=orchestrator;Username=postgres;Password=postgres;SSL Mode=Disable";
 
         connStr = DbConnectionHelper.FormatConnectionString(connStr);

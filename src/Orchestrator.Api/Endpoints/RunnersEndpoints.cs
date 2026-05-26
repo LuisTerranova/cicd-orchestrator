@@ -1,95 +1,141 @@
 using Orchestrator.Api.Extensions;
+using Orchestrator.Application.Common;
 using Orchestrator.Application.Runners;
 using Orchestrator.Domain.Interfaces;
 using Orchestrator.Domain.ValueObjects;
+using Orchestrator.Infrastructure.Persistence;
 
 namespace Orchestrator.Api.Endpoints;
 
-public static class RunnersEndpoints
+public class RunnersEndpoints : IEndpoint
 {
-    public static void MapRunnersEndpoints(this IEndpointRouteBuilder app)
+    public static void Map(IEndpointRouteBuilder app)
     {
-        // GET /api/runners - Retrieve all runners
-        app.MapGet("/api/runners", async (HttpContext http, CancellationToken ct) =>
-        {
-            var query = http.RequestServices.GetRequiredService<GetAllRunnersQuery>();
-            var runners = await query.HandleAsync(ct);
-            var response = runners.Select(r => new RunnerResponse(r.Id, r.Name, r.Status.ToString(), r.Labels, r.LastSeen)).ToArray();
-            return Results.Ok(response);
-        });
+        var group = app.MapGroup("/api/runners").WithTags("Runners");
 
-        // GET /api/runners/{id:guid} - Retrieve runner by ID
-        app.MapGet("/api/runners/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
-        {
-            var query = http.RequestServices.GetRequiredService<GetRunnerByIdQuery>();
-            var runner = await query.HandleAsync(id, ct);
-            if (runner == null)
-                return Results.NotFound();
+        group.MapGet("/", GetAllRunnersAsync);
+        group.MapGet("/{id:guid}", GetRunnerByIdAsync);
+        group.MapPost("/register", RegisterRunnerAsync);
+        group.MapPost("/{id:guid}/reconcile", ReconcileRunnerAsync);
+    }
 
-            var response = new RunnerResponse(runner.Id, runner.Name, runner.Status.ToString(), runner.Labels, runner.LastSeen);
-            return Results.Ok(response);
-        });
+    private static async Task<IResult> GetAllRunnersAsync(
+        GetAllRunnersQuery query,
+        int page = 1,
+        int pageSize = 10,
+        CancellationToken ct = default
+    )
+    {
+        var result = await query.HandleAsync(page, pageSize, ct);
+        var dtos = result
+            .Items.Select(r => new RunnerResponse(
+                r.Id,
+                r.Name,
+                r.Status.ToString(),
+                r.Labels,
+                r.LastSeen
+            ))
+            .ToArray();
+        return Results.Ok(
+            new PagedResponse<RunnerResponse[]>(dtos, result.TotalCount, page, pageSize)
+        );
+    }
 
-        // POST /api/runners/register - Register a new runner agent
-        app.MapPost("/api/runners/register", async (RegisterRunnerCommand command, HttpContext http, CancellationToken ct) =>
-        {
-            var handler = http.RequestServices.GetRequiredService<RegisterRunnerHandler>();
-            var runnerId = await handler.HandleAsync(command, ct);
-            
-            var tokenGenerator = http.RequestServices.GetRequiredService<IRunnerTokenGenerator>();
-            var secret = tokenGenerator.GenerateToken(runnerId);
+    private static async Task<IResult> GetRunnerByIdAsync(
+        Guid id,
+        GetRunnerByIdQuery query,
+        CancellationToken ct
+    )
+    {
+        var runner = await query.HandleAsync(id, ct);
+        if (runner == null)
+            return Results.NotFound();
 
-            return Results.Created($"/api/runners/{runnerId}", new RegisterRunnerResponse(runnerId, secret));
-        });
+        var response = new RunnerResponse(
+            runner.Id,
+            runner.Name,
+            runner.Status.ToString(),
+            runner.Labels,
+            runner.LastSeen
+        );
+        return Results.Ok(response);
+    }
 
-        // POST /api/runners/{id:guid}/reconcile - Reconcile runner active jobs and heartbeat status
-        app.MapPost("/api/runners/{id:guid}/reconcile", async (Guid id, ReconcileRequest request, HttpContext http, CancellationToken ct) =>
-        {
-            var jobRepository = http.RequestServices.GetRequiredService<IJobRepository>();
-            var runningJobs = await jobRepository.GetByStatusAsync(JobStatus.Running, ct);
-            var runnerJobs = runningJobs.Where(j => j.RunnerId == id).ToList();
+    private static async Task<IResult> RegisterRunnerAsync(
+        RegisterRunnerCommand command,
+        ICommandHandler<RegisterRunnerCommand, Guid> handler,
+        IRunnerTokenGenerator tokenGenerator,
+        CancellationToken ct
+    )
+    {
+        var runnerId = await handler.HandleAsync(command, ct);
+        var secret = tokenGenerator.GenerateToken(runnerId);
 
-            // Detect orphaned jobs (running on server but not active on runner)
-            var orphanedJobs = runnerJobs
-                .Where(j => !request.ActiveJobs.Contains(j.Id))
-                .Select(j => new OrphanedJob(j.Id, "Job is marked as running on server but is not active on runner"))
-                .ToArray();
+        return Results.Created(
+            $"/api/runners/{runnerId}",
+            new RegisterRunnerResponse(runnerId, secret)
+        );
+    }
 
-            // Update runner heartbeat and status
-            var runnerRepository = http.RequestServices.GetRequiredService<IRunnerRepository>();
-            var unitOfWork = http.RequestServices.GetRequiredService<IUnitOfWork>();
-            var runner = await runnerRepository.GetByIdAsync(id, ct);
-            if (runner != null)
-            {
-                runner.Heartbeat();
+    private static async Task<IResult> ReconcileRunnerAsync(
+        Guid id,
+        ReconcileRequest request,
+        IJobRepository jobRepository,
+        IRunnerRepository runnerRepository,
+        OrchestratorDbContext dbContext,
+        CancellationToken ct
+    )
+    {
+        var runningJobs = await jobRepository.GetByStatusAsync(JobStatus.Running, ct);
+        var runnerJobs = runningJobs.Where(j => j.RunnerId == id).ToList();
 
-                if (Enum.TryParse<RunnerStatus>(request.RunnerStatus, true, out var reportedStatus))
-                {
-                    if (reportedStatus == RunnerStatus.Idle)
-                    {
-                        if (runner.Status == RunnerStatus.Busy)
-                            runner.GoIdle();
-                        else if (runner.Status == RunnerStatus.Offline || runner.Status == RunnerStatus.Disconnected)
-                            runner.Register();
-                    }
-                    else if (reportedStatus == RunnerStatus.Busy)
-                    {
-                        if (runner.Status == RunnerStatus.Idle)
-                            runner.GoBusy();
-                        else if (runner.Status == RunnerStatus.Offline || runner.Status == RunnerStatus.Disconnected)
-                        {
-                            runner.Register();
-                            runner.GoBusy();
-                        }
-                    }
-                }
+        // Detect orphaned jobs (running on server but not active on runner)
+        var orphanedJobs = runnerJobs
+            .Where(j => !request.ActiveJobs.Contains(j.Id))
+            .Select(j => new OrphanedJob(
+                j.Id,
+                "Job is marked as running on server but is not active on runner"
+            ))
+            .ToArray();
 
-                await runnerRepository.UpdateAsync(runner, ct);
-                await unitOfWork.SaveChangesAsync(ct);
-            }
-
+        // Update runner heartbeat and status
+        var runner = await runnerRepository.GetByIdAsync(id, ct);
+        if (runner == null)
             return Results.Ok(new ReconcileResponse(orphanedJobs, "active"));
-        });
+
+        runner.Heartbeat();
+
+        // Reconcile and transition runner status based on what the runner agent reports vs its current database status
+        if (Enum.TryParse<RunnerStatus>(request.RunnerStatus, true, out var reportedStatus))
+        {
+            switch (reportedStatus, runner.Status)
+            {
+                // Runner reports it is Idle, but database says Busy -> Go Idle
+                case (RunnerStatus.Idle, RunnerStatus.Busy):
+                    runner.GoIdle();
+                    break;
+
+                // Runner reports Idle, but database says Offline/Disconnected -> Re-register (reconnect)
+                case (RunnerStatus.Idle, RunnerStatus.Offline or RunnerStatus.Disconnected):
+                    runner.Register();
+                    break;
+
+                // Runner reports Busy, but database says Idle -> Transition to Busy
+                case (RunnerStatus.Busy, RunnerStatus.Idle):
+                    runner.GoBusy();
+                    break;
+
+                // Runner reports Busy, but database says Offline/Disconnected -> Re-register first, then go Busy
+                case (RunnerStatus.Busy, RunnerStatus.Offline or RunnerStatus.Disconnected):
+                    runner.Register();
+                    runner.GoBusy();
+                    break;
+            }
+        }
+
+        await runnerRepository.UpdateAsync(runner, ct);
+        await dbContext.SaveChangesAsync(ct);
+
+        return Results.Ok(new ReconcileResponse(orphanedJobs, "active"));
     }
 }
-

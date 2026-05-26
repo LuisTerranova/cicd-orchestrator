@@ -33,8 +33,12 @@ var configPath = parseResult.HasOption("--config")
 var loader = new ConfigurationLoader();
 var options = loader.Load(configPath, parseResult);
 
-using var loggerFactory = LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(
-    Enum.TryParse<LogLevel>(options.LogLevel, out var level) ? level : LogLevel.Information));
+using var loggerFactory = LoggerFactory.Create(b =>
+    b.AddConsole()
+        .SetMinimumLevel(
+            Enum.TryParse<LogLevel>(options.LogLevel, out var level) ? level : LogLevel.Information
+        )
+);
 var validator = new RunnerOptionsValidator(loggerFactory.CreateLogger<RunnerOptionsValidator>());
 
 var errors = validator.Validate(options);

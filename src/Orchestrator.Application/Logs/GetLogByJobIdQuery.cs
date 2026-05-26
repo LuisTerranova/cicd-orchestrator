@@ -2,15 +2,10 @@ using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Application.Logs;
 
-public sealed class GetLogByJobIdQuery
+public sealed class GetLogByJobIdQuery(ILogRepository logs)
 {
-    private readonly ILogRepository _logs;
-
-    public GetLogByJobIdQuery(ILogRepository logs)
-    {
-        _logs = logs;
-    }
-
-    public async Task<Domain.Entities.LogMetadata?> HandleAsync(Guid jobId, CancellationToken ct = default)
-        => await _logs.GetByJobIdAsync(jobId, ct);
+    public async Task<Domain.Entities.LogMetadata?> HandleAsync(
+        Guid jobId,
+        CancellationToken ct = default
+    ) => await logs.GetByJobIdAsync(jobId, ct);
 }

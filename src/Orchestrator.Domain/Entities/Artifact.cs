@@ -14,7 +14,14 @@ public class Artifact : Entity
 
     private Artifact() { }
 
-    public static Artifact Create(Guid buildId, string name, string storagePath, int sizeBytes, string contentType, DateTime? expiresAt = null)
+    public static Artifact Create(
+        Guid buildId,
+        string name,
+        string storagePath,
+        int sizeBytes,
+        string contentType,
+        DateTime? expiresAt = null
+    )
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Artifact name cannot be empty.");
@@ -30,7 +37,7 @@ public class Artifact : Entity
             SizeBytes = sizeBytes,
             ContentType = contentType,
             CreatedAt = DateTime.UtcNow,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
         };
     }
 }

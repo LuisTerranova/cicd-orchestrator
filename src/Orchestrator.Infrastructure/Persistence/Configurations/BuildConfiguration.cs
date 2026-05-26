@@ -15,7 +15,11 @@ public class BuildConfiguration : IEntityTypeConfiguration<Build>
         builder.Property(b => b.Status).IsRequired().HasConversion<string>().HasMaxLength(50);
         builder.Property(b => b.CreatedAt).IsRequired();
         builder.Property(b => b.Priority).HasDefaultValue(0);
-        builder.HasMany(b => b.Jobs).WithOne().HasForeignKey(j => j.BuildId).OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasMany(b => b.Jobs)
+            .WithOne()
+            .HasForeignKey(j => j.BuildId)
+            .OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(b => b.PipelineId);
     }
 }

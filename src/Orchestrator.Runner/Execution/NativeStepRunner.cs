@@ -12,15 +12,21 @@ public sealed class NativeStepRunner
     public NativeStepRunner(
         ProcessInvoker processInvoker,
         TempScriptWriter scriptWriter,
-        ILogger<NativeStepRunner> logger)
+        ILogger<NativeStepRunner> logger
+    )
     {
         _processInvoker = processInvoker;
         _scriptWriter = scriptWriter;
         _logger = logger;
     }
 
-    public async Task<JobStepResult> RunAsync(JobStep step, Guid jobId, string workspacePath,
-        Dictionary<string, string> secrets, CancellationToken ct)
+    public async Task<JobStepResult> RunAsync(
+        JobStep step,
+        Guid jobId,
+        string workspacePath,
+        Dictionary<string, string> secrets,
+        CancellationToken ct
+    )
     {
         var startedAt = DateTime.UtcNow;
 
@@ -34,7 +40,8 @@ public sealed class NativeStepRunner
                 step.Name,
                 result.ExitCode == 0 ? "passed" : "failed",
                 result.ExitCode,
-                DateTime.UtcNow - startedAt);
+                DateTime.UtcNow - startedAt
+            );
         }
         catch (Exception ex)
         {

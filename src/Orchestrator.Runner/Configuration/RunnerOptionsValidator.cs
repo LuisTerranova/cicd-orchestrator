@@ -16,8 +16,10 @@ public sealed class RunnerOptionsValidator
         var errors = new List<string>();
 
         // ServerUrl must be a valid absolute URL
-        if (!Uri.TryCreate(options.ServerUrl, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != "http" && uri.Scheme != "https"))
+        if (
+            !Uri.TryCreate(options.ServerUrl, UriKind.Absolute, out var uri)
+            || (uri.Scheme != "http" && uri.Scheme != "https")
+        )
         {
             errors.Add($"ServerUrl must be a valid HTTP/HTTPS URL. Got: '{options.ServerUrl}'");
         }

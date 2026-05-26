@@ -1,16 +1,13 @@
+using Orchestrator.Domain.Common;
 using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Application.Runners;
 
-public sealed class GetAllRunnersQuery
+public sealed class GetAllRunnersQuery(IRunnerRepository runners)
 {
-    private readonly IRunnerRepository _runners;
-
-    public GetAllRunnersQuery(IRunnerRepository runners)
-    {
-        _runners = runners;
-    }
-
-    public async Task<IReadOnlyCollection<Domain.Entities.Runner>> HandleAsync(CancellationToken ct = default)
-        => await _runners.GetAllAsync(ct);
+    public async Task<PagedResult<Domain.Entities.Runner>> HandleAsync(
+        int page,
+        int pageSize,
+        CancellationToken ct = default
+    ) => await runners.GetPagedAsync(page, pageSize, ct);
 }

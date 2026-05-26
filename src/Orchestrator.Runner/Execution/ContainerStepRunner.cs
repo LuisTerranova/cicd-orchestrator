@@ -12,7 +12,8 @@ public sealed class ContainerStepRunner
     public ContainerStepRunner(
         Container.PodmanCli podmanCli,
         TempScriptWriter scriptWriter,
-        ILogger<ContainerStepRunner> logger)
+        ILogger<ContainerStepRunner> logger
+    )
     {
         _podmanCli = podmanCli;
         _scriptWriter = scriptWriter;
@@ -25,8 +26,14 @@ public sealed class ContainerStepRunner
     // Full container lifecycle: pull image → write step script → create container
     // (with workspace mount) → start → exec script → return result.
     // The script path inside the container is derived from /workspace mount point.
-    public async Task<JobStepResult> RunAsync(JobStep step, Guid jobId, string workspacePath,
-        Dictionary<string, string> secrets, string image, CancellationToken ct)
+    public async Task<JobStepResult> RunAsync(
+        JobStep step,
+        Guid jobId,
+        string workspacePath,
+        Dictionary<string, string> secrets,
+        string image,
+        CancellationToken ct
+    )
     {
         var startedAt = DateTime.UtcNow;
 
@@ -43,7 +50,8 @@ public sealed class ContainerStepRunner
                 ContainerName: $"step-{jobId:N}-{Sanitize(step.Name)}",
                 Image: image,
                 WorkspacePath: workspacePath,
-                SecretsPath: "/run/secrets");
+                SecretsPath: "/run/secrets"
+            );
 
             var containerId = await _podmanCli.CreateAsync(image, spec, ct);
             await _podmanCli.StartAsync(containerId, ct);
@@ -55,7 +63,8 @@ public sealed class ContainerStepRunner
                 step.Name,
                 exitCode == 0 ? "passed" : "failed",
                 exitCode,
-                DateTime.UtcNow - startedAt);
+                DateTime.UtcNow - startedAt
+            );
         }
         catch (Exception ex)
         {

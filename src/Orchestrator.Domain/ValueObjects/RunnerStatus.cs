@@ -6,5 +6,5 @@ public enum RunnerStatus
     Idle,
     Busy,
     Disconnected,
-    Revoked
+    Revoked,
 }

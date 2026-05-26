@@ -1,18 +1,29 @@
+using Orchestrator.Api.Extensions;
+using Orchestrator.Application.Common;
 using Orchestrator.Application.Webhooks;
 
 namespace Orchestrator.Api.Endpoints;
 
-public static class WebhooksEndpoints
+public class WebhooksEndpoints : IEndpoint
 {
-    public static void MapWebhooksEndpoints(this IEndpointRouteBuilder app)
+    public static void Map(IEndpointRouteBuilder app)
     {
-        // POST /api/webhooks - Process incoming VCS webhooks (GitHub, GitLab, etc.)
-        app.MapPost("/api/webhooks", async (ProcessWebhookCommand command, HttpContext http, CancellationToken ct) =>
-        {
-            var handler = http.RequestServices.GetRequiredService<ProcessWebhookHandler>();
-            await handler.HandleAsync(command, ct);
-            return Results.Ok();
-        });
+        app.MapPost(
+            "/api/webhooks",
+            async (
+                WebhookRequest request,
+                ICommandHandler<ProcessWebhookCommand> processWebhookHandler,
+                CancellationToken ct
+            ) =>
+            {
+                var command = new ProcessWebhookCommand(
+                    request.Payload,
+                    request.Signature,
+                    request.Secret
+                );
+                await processWebhookHandler.HandleAsync(command, ct);
+                return Results.Ok();
+            }
+        );
     }
 }
-

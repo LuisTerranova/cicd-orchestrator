@@ -1,41 +1,69 @@
 using Orchestrator.Api.Extensions;
+using Orchestrator.Application.Common;
 using Orchestrator.Application.Pipelines;
 
 namespace Orchestrator.Api.Endpoints;
 
-public static class PipelinesEndpoints
+public class PipelinesEndpoints : IEndpoint
 {
-    public static void MapPipelinesEndpoints(this IEndpointRouteBuilder app)
+    public static void Map(IEndpointRouteBuilder app)
     {
-        // GET /api/pipelines - Retrieve all pipelines
-        app.MapGet("/api/pipelines", async (HttpContext http, CancellationToken ct) =>
-        {
-            var query = http.RequestServices.GetRequiredService<GetAllPipelinesQuery>();
-            var pipelines = await query.HandleAsync(ct);
-            var response = pipelines.Select(p => new PipelineResponse(p.Id, p.Name, p.Repo, p.Branch, p.CreatedAt)).ToArray();
-            return Results.Ok(response);
-        });
+        var group = app.MapGroup("/api/pipelines").WithTags("Pipelines");
 
-        // GET /api/pipelines/{id:guid} - Retrieve pipeline by ID
-        app.MapGet("/api/pipelines/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
-        {
-            var query = http.RequestServices.GetRequiredService<GetPipelineByIdQuery>();
-            var pipeline = await query.HandleAsync(id, ct);
-            if (pipeline == null)
-                return Results.NotFound();
+        group.MapGet("/", GetAllPipelinesAsync);
+        group.MapGet("/{id:guid}", GetPipelineByIdAsync);
+        group.MapPost("/", CreatePipelineAsync);
+    }
 
-            var response = new PipelineResponse(pipeline.Id, pipeline.Name, pipeline.Repo, pipeline.Branch, pipeline.CreatedAt);
-            return Results.Ok(response);
-        });
+    private static async Task<IResult> GetAllPipelinesAsync(
+        GetAllPipelinesQuery getAllPipelinesQuery,
+        int page = 1,
+        int pageSize = 10,
+        CancellationToken ct = default
+    )
+    {
+        var result = await getAllPipelinesQuery.HandleAsync(page, pageSize, ct);
+        var dtos = result
+            .Items.Select(p => new PipelineResponse(p.Id, p.Name, p.Repo, p.Branch, p.CreatedAt))
+            .ToArray();
+        return Results.Ok(
+            new PagedResponse<PipelineResponse[]>(dtos, result.TotalCount, page, pageSize)
+        );
+    }
 
-        // POST /api/pipelines - Create a new pipeline
-        app.MapPost("/api/pipelines", async (PipelineCreateRequest request, HttpContext http, CancellationToken ct) =>
-        {
-            var handler = http.RequestServices.GetRequiredService<CreatePipelineHandler>();
-            var command = new CreatePipelineCommand(request.Name, request.Repo, request.Branch ?? "main", request.YamlPath ?? "");
-            var id = await handler.HandleAsync(command, ct);
-            return Results.Created($"/api/pipelines/{id}", new { id });
-        });
+    private static async Task<IResult> GetPipelineByIdAsync(
+        Guid id,
+        GetPipelineByIdQuery getPipelineByIdQuery,
+        CancellationToken ct
+    )
+    {
+        var pipeline = await getPipelineByIdQuery.HandleAsync(id, ct);
+        if (pipeline == null)
+            return Results.NotFound();
+
+        var response = new PipelineResponse(
+            pipeline.Id,
+            pipeline.Name,
+            pipeline.Repo,
+            pipeline.Branch,
+            pipeline.CreatedAt
+        );
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> CreatePipelineAsync(
+        PipelineCreateRequest request,
+        ICommandHandler<CreatePipelineCommand, Guid> createPipelineHandler,
+        CancellationToken ct
+    )
+    {
+        var command = new CreatePipelineCommand(
+            request.Name,
+            request.Repo,
+            request.Branch ?? "main",
+            request.YamlPath ?? ""
+        );
+        var id = await createPipelineHandler.HandleAsync(command, ct);
+        return Results.Created($"/api/pipelines/{id}", new { id });
     }
 }
-

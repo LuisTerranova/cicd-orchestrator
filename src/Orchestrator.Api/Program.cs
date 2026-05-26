@@ -1,8 +1,12 @@
-using Orchestrator.Api.Endpoints;
 using Orchestrator.Api.Extensions;
 using Orchestrator.Application;
+using Orchestrator.Application.Builds;
 using Orchestrator.Application.Common;
-using Orchestrator.Domain.Interfaces;
+using Orchestrator.Application.Jobs;
+using Orchestrator.Application.Logs;
+using Orchestrator.Application.Pipelines;
+using Orchestrator.Application.Runners;
+using Orchestrator.Application.Webhooks;
 using Orchestrator.Infrastructure;
 using Orchestrator.Infrastructure.Persistence;
 
@@ -11,7 +15,7 @@ DotNetEnv.Env.Load();
 var connStr = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 if (!string.IsNullOrEmpty(connStr))
 {
-    var formattedConnStr = Orchestrator.Infrastructure.Persistence.DbConnectionHelper.FormatConnectionString(connStr);
+    var formattedConnStr = DbConnectionHelper.FormatConnectionString(connStr);
     Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", formattedConnStr);
 }
 
@@ -19,10 +23,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<OrchestratorDbContext>());
-builder.Services.AddOpenApi();
 
+builder.Services.AddDecoratedCommandHandler<TriggerBuildCommand, Guid, TriggerBuildHandler>();
+builder.Services.AddDecoratedCommandHandler<AssignJobCommand, AssignJobHandler>();
+builder.Services.AddDecoratedCommandHandler<CancelJobCommand, CancelJobHandler>();
+builder.Services.AddDecoratedCommandHandler<CompleteJobCommand, CompleteJobHandler>();
+builder.Services.AddDecoratedCommandHandler<UploadLogCommand, Guid, UploadLogHandler>();
+builder.Services.AddDecoratedCommandHandler<CreatePipelineCommand, Guid, CreatePipelineHandler>();
+builder.Services.AddDecoratedCommandHandler<RegisterRunnerCommand, Guid, RegisterRunnerHandler>();
+builder.Services.AddLoggingCommandHandler<ProcessWebhookCommand, ProcessWebhookHandler>();
+
+builder.Services.AddEndpoints();
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -33,12 +45,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPipelinesEndpoints();
-app.MapBuildsEndpoints();
-app.MapRunnersEndpoints();
-app.MapJobsEndpoints();
-app.MapWebhooksEndpoints();
-app.MapLogsEndpoints();
-app.MapHealthEndpoints();
+app.MapEndpoints();
 
 app.Run();

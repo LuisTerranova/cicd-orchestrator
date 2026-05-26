@@ -15,7 +15,12 @@ public class Pipeline : Entity
 
     private Pipeline() { }
 
-    public static Pipeline Create(string name, string repo, string branch = "main", string yamlPath = "")
+    public static Pipeline Create(
+        string name,
+        string repo,
+        string branch = "main",
+        string yamlPath = ""
+    )
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Pipeline name cannot be empty.");
@@ -29,7 +34,7 @@ public class Pipeline : Entity
             Repo = repo,
             Branch = branch,
             YamlPath = yamlPath ?? string.Empty,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
     }
 
