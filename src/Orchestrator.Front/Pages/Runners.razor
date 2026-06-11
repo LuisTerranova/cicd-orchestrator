@@ -58,7 +58,7 @@ else
                         <td>
                             <div class="d-flex flex-column">
                                 <span class="fw-bold">@r.Name</span>
-                                <span class="text-muted" style="font-size: 0.75rem;">ID: @r.Id.ToString()[..8]</span>
+                                <span style="color: var(--text-main); font-size: 0.75rem;">ID: @r.Id.ToString()[..8]</span>
                             </div>
                         </td>
                         <td><StatusBadge Status="@r.Status" /></td>
@@ -67,19 +67,19 @@ else
                             {
                                 @foreach (var label in r.Labels)
                                 {
-                                    <span class="badge bg-secondary bg-opacity-10 text-muted border border-secondary border-opacity-25 me-1" style="font-size: 0.75rem; font-weight: 500;">
+                                    <span class="badge bg-secondary bg-opacity-10 border border-secondary border-opacity-25 me-1" style="color: var(--text-main); font-size: 0.75rem; font-weight: 500;">
                                         @label
                                     </span>
                                 }
                             }
                             else
                             {
-                                <span class="text-muted font-italic" style="font-size: 0.8rem;">None</span>
+                                <span style="color: var(--text-main); font-size: 0.8rem; font-style: italic;">None</span>
                             }
                         </td>
                         <td>@r.LastSeen.ToLocalTime().ToString("g")</td>
                         <td>
-                            <span class="text-muted" style="font-size: 0.9rem;">
+                            <span style="color: var(--text-main); font-size: 0.9rem;">
                                 @GetUptime(r.LastSeen)
                             </span>
                         </td>

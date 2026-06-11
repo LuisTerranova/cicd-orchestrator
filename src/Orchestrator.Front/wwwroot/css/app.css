@@ -533,3 +533,8 @@ main {
     color: #cbd5e1 !important; /* Slate 300 - readable form labels */
 }
 
+/* Runner/Worker info text - light color for dark background */
+.runner-info-text {
+    color: var(--text-main) !important;
+}
+

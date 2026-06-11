@@ -19,7 +19,6 @@ public sealed class RegisterRunnerHandler(
             command.Os,
             command.Arch
         );
-        runner.Register();
         await runners.AddAsync(runner, ct);
         await eventDispatcher.DispatchAsync(runner.DomainEvents, ct);
         runner.ClearDomainEvents();

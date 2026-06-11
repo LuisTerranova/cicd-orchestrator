@@ -85,6 +85,7 @@ public sealed class RunnerAgent : IHostedLifecycleService
 
         _receiveCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _ = RunReceiveLoopAsync(_receiveCts.Token);
+        _ = PeriodicReconcileLoopAsync(_receiveCts.Token);
 
         _logger.LogInformation("Runner {RunnerId} ready. Awaiting jobs.", _runnerId);
     }
@@ -140,5 +141,26 @@ public sealed class RunnerAgent : IHostedLifecycleService
         var orphaned = await _cleanup.CleanAsync(_runnerId, ct);
         if (orphaned > 0)
             _logger.LogInformation("Cleaned {Count} orphaned containers", orphaned);
+    }
+
+    private async Task PeriodicReconcileLoopAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(_options.HeartbeatInterval, ct);
+                var status = _state.ActiveJobIds.Length > 0 ? "busy" : "idle";
+                await _reconciliator.ReconcileAsync(_runnerId, status, _state.ActiveJobIds, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("Periodic reconcile failed: {Ex}", ex.Message);
+            }
+        }
     }
 }

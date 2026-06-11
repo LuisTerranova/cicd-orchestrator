@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        services.Configure<RunnerExpiryOptions>(configuration.GetSection("RunnerExpiry"));
 
         services.AddMassTransit(bus =>
         {
@@ -64,6 +65,7 @@ public static class DependencyInjection
         services.AddHostedService<JobDispatcherBackgroundService>();
         services.AddHostedService<LogRetentionService>();
         services.AddHostedService<ArtifactCleanupService>();
+        services.AddHostedService<RunnerExpiryService>();
 
         return services;
     }
