@@ -1,3 +1,9 @@
 namespace Orchestrator.Application.Webhooks;
 
-public sealed record ProcessWebhookCommand(string Payload, string Signature, string Secret);
+public sealed record ProcessWebhookCommand(
+    Guid PipelineId,
+    string Branch,
+    string EventType,
+    string CommitSha,
+    string Actor
+);

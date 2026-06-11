@@ -12,6 +12,7 @@ public class Job : Entity
     public Guid? RunnerId { get; private set; }
     public DateTime? StartedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    public int ExitCode { get; private set; }
     public int Version { get; private set; }
 
     private Job() { }
@@ -47,6 +48,10 @@ public class Job : Entity
 
     public void Complete(int exitCode)
     {
+        if (Status != JobStatus.Running && Status != JobStatus.Queued)
+            throw new DomainException("Only running or queued jobs can be completed.");
+
+        ExitCode = exitCode;
         Status = exitCode == 0 ? JobStatus.Passed : JobStatus.Failed;
         CompletedAt = DateTime.UtcNow;
         AddDomainEvent(new JobCompletedEvent(Id, Status, exitCode));
@@ -54,6 +59,9 @@ public class Job : Entity
 
     public void Cancel(string reason)
     {
+        if (Status is JobStatus.Passed or JobStatus.Failed or JobStatus.Cancelled or JobStatus.Skipped)
+            throw new DomainException("Cannot cancel a job that has already completed.");
+
         Status = JobStatus.Cancelled;
         CompletedAt = DateTime.UtcNow;
         AddDomainEvent(new JobCancelledEvent(Id, reason));
@@ -61,11 +69,27 @@ public class Job : Entity
 
     public void Skip()
     {
+        if (Status != JobStatus.Pending && Status != JobStatus.Queued)
+            throw new DomainException("Only pending or queued jobs can be skipped.");
+
         Status = JobStatus.Skipped;
     }
 
     public void Queue()
     {
+        if (Status != JobStatus.Pending)
+            throw new DomainException("Only pending jobs can be queued.");
+
         Status = JobStatus.Queued;
+        AddDomainEvent(new JobQueuedEvent(Id, BuildId, Version));
+    }
+
+    public void Start()
+    {
+        if (Status != JobStatus.Queued)
+            throw new DomainException("Only queued jobs can be started.");
+
+        Status = JobStatus.Running;
+        StartedAt = DateTime.UtcNow;
     }
 }

@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1416
+#pragma warning disable CA1416
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -68,7 +68,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<PodmanCli>();
         services.AddSingleton<ProcessInvoker>();
         services.AddSingleton<TempScriptWriter>();
-        services.AddSingleton<NativeStepRunner>();
         services.AddSingleton<ContainerStepRunner>();
         services.AddSingleton<StepRunner>();
         services.AddSingleton<JobExecutor>();
@@ -76,11 +75,14 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<LogUploader>();
         services.AddSingleton<SecretMasker>();
         services.AddSingleton<HeartbeatService>();
+        services.AddHostedService(sp => sp.GetRequiredService<HeartbeatService>());
         services.AddSingleton<ContainerCleanupService>();
+        services.AddHostedService(sp => sp.GetRequiredService<ContainerCleanupService>());
         services.AddSingleton<ProgressReporter>();
         services.AddSingleton<Reconciliator>();
         services.AddSingleton<ArtifactUploader>();
         services.AddSingleton<RunnerAgent>();
+        services.AddHostedService(sp => sp.GetRequiredService<RunnerAgent>());
         services.AddSingleton<JobConsumer>();
         services.AddSingleton<CancellationConsumer>();
         services.AddSingleton<JobResultPublisher>();
@@ -90,5 +92,4 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
-await host.Services.GetRequiredService<RunnerAgent>().StartAsync(CancellationToken.None);
 await host.WaitForShutdownAsync();

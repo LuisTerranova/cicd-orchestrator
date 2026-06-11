@@ -33,6 +33,7 @@ public sealed class JobConsumer : IConsumer<JobQueued>
         if (_state.Draining || !_state.TryAcquireSlot())
         {
             _logger.LogWarning("Job {JobId} rejected — no slot available or draining", job.JobId);
+            await context.Redeliver(TimeSpan.FromSeconds(30));
             return;
         }
 

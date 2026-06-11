@@ -20,12 +20,15 @@ public class EfJobRepository(OrchestratorDbContext context) : IJobRepository
         CancellationToken ct = default
     ) => await context.Jobs.Where(j => j.Status == status).ToListAsync(ct);
 
-    public async Task AddAsync(Job job, CancellationToken ct = default) =>
+    public async Task AddAsync(Job job, CancellationToken ct = default)
+    {
         await context.Jobs.AddAsync(job, ct);
+        await context.SaveChangesAsync(ct);
+    }
 
-    public Task UpdateAsync(Job job, CancellationToken ct = default)
+    public async Task UpdateAsync(Job job, CancellationToken ct = default)
     {
         context.Jobs.Update(job);
-        return Task.CompletedTask;
+        await context.SaveChangesAsync(ct);
     }
 }

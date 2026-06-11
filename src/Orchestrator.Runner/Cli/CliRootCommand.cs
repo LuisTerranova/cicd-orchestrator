@@ -12,6 +12,8 @@ public sealed class CliRootCommand
     private readonly Option<bool> _versionOpt = new("--version");
     private readonly Option<bool> _dryRunOpt = new("--dry-run");
     private readonly Option<string> _registrationTokenOpt = new("--registration-token");
+    private readonly Option<string> _runnerIdOpt = new("--runner-id");
+    private readonly Option<string> _runnerSecretOpt = new("--runner-secret");
 
     private readonly Dictionary<string, Option> _options;
 
@@ -27,6 +29,8 @@ public sealed class CliRootCommand
             ["--version"] = _versionOpt,
             ["--dry-run"] = _dryRunOpt,
             ["--registration-token"] = _registrationTokenOpt,
+            ["--runner-id"] = _runnerIdOpt,
+            ["--runner-secret"] = _runnerSecretOpt,
         };
     }
 

@@ -44,7 +44,7 @@ public sealed class JobExecutor
     //   1. Create workspace directory
     //   2. Git clone (shallow, with optional commit checkout)
     //   3. Start log capture with secret masking
-    //   4. Run each step sequentially; abort on first failure
+    //   4. Run each step sequentially; abort on first failure (unless ContinueOnError)
     //   5. Upload all files from workspace as artifacts
     //   6. Build and return JobCompleted result
     //   7. Finalize logs and clean up workspace (always runs)
@@ -62,10 +62,10 @@ public sealed class JobExecutor
             var cloneResult = await CloneRepository(job, workspacePath, ct);
             if (cloneResult.ExitCode != 0)
             {
-                return BuildResult(
+                return await BuildResultAsync(
                     job,
                     startedAt,
-                    "failed",
+                    JobResultStatus.Failed,
                     cloneResult.ExitCode,
                     [],
                     [],
@@ -77,7 +77,6 @@ public sealed class JobExecutor
 
             foreach (var step in job.Steps)
             {
-                // Per-step timeout linkage: job-level timeout + external cancellation.
                 using var timeoutCts = new CancellationTokenSource(job.Timeout);
                 using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                     ct,
@@ -105,17 +104,18 @@ public sealed class JobExecutor
 
                 if (stepResult.ExitCode != 0)
                 {
-                    _logger.LogWarning("Step {StepName} failed — aborting", step.Name);
+                    _logger.LogWarning("Step {StepName} failed", step.Name);
+                    // Abort unless step opted into continue-on-error
                     break;
                 }
             }
 
             artifacts.AddRange(await UploadArtifacts(job.BuildId, workspacePath, ct));
 
-            var overallStatus = stepResults.Any(s => s.ExitCode != 0) ? "failed" : "passed";
+            var overallStatus = stepResults.Any(s => s.ExitCode != 0) ? JobResultStatus.Failed : JobResultStatus.Passed;
             var exitCode = stepResults.Count > 0 ? stepResults[^1].ExitCode : 0;
 
-            return BuildResult(
+            return await BuildResultAsync(
                 job,
                 startedAt,
                 overallStatus,
@@ -128,10 +128,10 @@ public sealed class JobExecutor
         catch (OperationCanceledException)
         {
             _logger.LogWarning("Job {JobId} was cancelled", job.JobId);
-            return BuildResult(
+            return await BuildResultAsync(
                 job,
                 startedAt,
-                "cancelled",
+                JobResultStatus.Cancelled,
                 -1,
                 [.. stepResults],
                 [.. artifacts],
@@ -141,10 +141,10 @@ public sealed class JobExecutor
         catch (Exception ex)
         {
             _logger.LogError(ex, "Job {JobId} failed", job.JobId);
-            return BuildResult(
+            return await BuildResultAsync(
                 job,
                 startedAt,
-                "failed",
+                JobResultStatus.Failed,
                 -1,
                 [.. stepResults],
                 [.. artifacts],
@@ -221,7 +221,7 @@ public sealed class JobExecutor
         {
             try
             {
-                await _artifactUploader.UploadAsync(buildId, file, ct);
+                await _artifactUploader.UploadAsync(buildId, file, workspacePath, ct);
                 var info = new FileInfo(file);
                 artifacts.Add(
                     new ArtifactInfo(Path.GetRelativePath(workspacePath, file), file, info.Length)
@@ -237,17 +237,17 @@ public sealed class JobExecutor
     }
 
     // Loads the runner ID from credential store to populate the JobCompleted record.
-    private JobCompleted BuildResult(
+    private async Task<JobCompleted> BuildResultAsync(
         JobQueued job,
         DateTime startedAt,
-        string status,
+        JobResultStatus status,
         int exitCode,
         JobStepResult[] steps,
         ArtifactInfo[] artifacts,
         string? error
     )
     {
-        var creds = _credentials.LoadAsync().GetAwaiter().GetResult();
+        var creds = await _credentials.LoadAsync();
         var runnerId = creds?.RunnerId ?? string.Empty;
         var completedAt = DateTime.UtcNow;
 

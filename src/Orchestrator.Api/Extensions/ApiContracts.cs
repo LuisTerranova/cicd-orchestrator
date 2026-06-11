@@ -9,10 +9,20 @@ public sealed record PipelineResponse(
     string Name,
     string Repo,
     string Branch,
-    DateTime CreatedAt
+    string YamlPath,
+    DateTime CreatedAt,
+    bool HasYaml,
+    string? YamlContent = null
 );
 
 public sealed record PipelineCreateRequest(
+    string Name,
+    string Repo,
+    string? Branch,
+    string? YamlPath
+);
+
+public sealed record PipelineUpdateRequest(
     string Name,
     string Repo,
     string? Branch,
@@ -28,12 +38,40 @@ public sealed record BuildResponse(
     DateTime? CompletedAt
 );
 
+public sealed record BuildDetailResponse(
+    Guid Id,
+    Guid PipelineId,
+    string PipelineName,
+    string Status,
+    string TriggerEvent,
+    string CommitSha,
+    DateTime CreatedAt,
+    DateTime? CompletedAt,
+    int Priority,
+    JobSummary[] Jobs
+);
+
+public sealed record JobSummary(
+    Guid Id,
+    string StageName,
+    string Status,
+    Guid? RunnerId,
+    DateTime? StartedAt,
+    DateTime? CompletedAt
+);
+
 public sealed record BuildTriggerRequest(
     Guid PipelineId,
     string TriggerEvent,
     string CommitSha,
+    string Actor = "system",
+    string Branch = "main",
     int Priority = 0
 );
+
+public sealed record BuildCancelRequest(string? Reason);
+
+public sealed record PipelineYamlUpdateRequest(string YamlContent);
 
 // Runner Endpoints DTOs
 public sealed record RunnerResponse(
@@ -42,6 +80,15 @@ public sealed record RunnerResponse(
     string Status,
     string[] Labels,
     DateTime LastSeen
+);
+
+public sealed record RegisterRunnerRequest(
+    string? Name,
+    string? RunnerName,
+    string[]? Labels,
+    string? Os,
+    string? Arch,
+    string? Token = null
 );
 
 public sealed record RegisterRunnerResponse(Guid RunnerId, string Secret);
@@ -71,6 +118,11 @@ public sealed record LogResponse(
 
 // Webhook Endpoints DTOs
 public sealed record WebhookRequest(string Payload, string Signature, string Secret);
+
+// Auth DTOs
+public sealed record AuthTokenResponse(string Token, Guid RunnerId, DateTime ExpiresAt);
+
+public sealed record ErrorResponse(string Code, string Message);
 
 public class PagedResponse<TData>
 {

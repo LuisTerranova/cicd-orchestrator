@@ -29,7 +29,7 @@ public sealed class Reconciliator
 
         var creds = await _credentials.LoadAsync();
 
-        var request = new HttpRequestMessage(HttpMethod.Post, $"api/runners/{runnerId}/reconcile")
+        var request = new HttpRequestMessage(HttpMethod.Post, $"api/v1/runners/{runnerId}/reconcile")
         {
             Content = JsonContent.Create(payload),
         };

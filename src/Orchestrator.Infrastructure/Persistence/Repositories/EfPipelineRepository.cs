@@ -24,12 +24,21 @@ public class EfPipelineRepository(OrchestratorDbContext context) : IPipelineRepo
         return new Domain.Common.PagedResult<Pipeline>(items, totalCount);
     }
 
-    public async Task AddAsync(Pipeline pipeline, CancellationToken ct = default) =>
+    public async Task AddAsync(Pipeline pipeline, CancellationToken ct = default)
+    {
         await context.Pipelines.AddAsync(pipeline, ct);
+        await context.SaveChangesAsync(ct);
+    }
 
-    public Task UpdateAsync(Pipeline pipeline, CancellationToken ct = default)
+    public async Task UpdateAsync(Pipeline pipeline, CancellationToken ct = default)
     {
         context.Pipelines.Update(pipeline);
-        return Task.CompletedTask;
+        await context.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteAsync(Pipeline pipeline, CancellationToken ct = default)
+    {
+        context.Pipelines.Remove(pipeline);
+        await context.SaveChangesAsync(ct);
     }
 }

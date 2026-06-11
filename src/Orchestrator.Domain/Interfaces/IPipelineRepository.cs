@@ -13,4 +13,5 @@ public interface IPipelineRepository
     );
     Task AddAsync(Pipeline pipeline, CancellationToken ct = default);
     Task UpdateAsync(Pipeline pipeline, CancellationToken ct = default);
+    Task DeleteAsync(Pipeline pipeline, CancellationToken ct = default);
 }

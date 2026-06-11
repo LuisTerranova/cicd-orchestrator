@@ -1,0 +1,273 @@
+@page "/pipelines/{PipelineId:guid}/edit"
+@inject OrchestratorApiClient Api
+@inject NavigationManager Nav
+
+<PageTitle>Edit Pipeline - Orchestrator</PageTitle>
+
+<div class="mb-4">
+    <a href="/pipelines" class="btn btn-sm btn-outline-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        <span>Back to Pipelines</span>
+    </a>
+</div>
+
+@if (Loading)
+{
+    <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-3 text-muted">Loading pipeline configuration...</span>
+    </div>
+}
+else if (Pipeline == null)
+{
+    <div class="alert alert-danger">Pipeline not found.</div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1" style="font-size: 1.75rem;">Edit Pipeline: @PipelineName</h1>
+            <p class="text-muted mb-0">Modify repository settings and customize the pipeline steps.</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(GlobalMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 bg-success bg-opacity-10 text-success border border-success border-opacity-25" role="alert">
+            @GlobalMessage
+            <button type="button" class="btn-close btn-close-white" @onclick="() => GlobalMessage = null" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        @* LEFT COLUMN: CONFIG FORM *@
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="mb-4" style="font-size: 1.2rem;">Pipeline Settings</h3>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Pipeline Name</label>
+                        <input @bind="PipelineName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Git Repository URL</label>
+                        <input @bind="PipelineRepo" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Target Branch</label>
+                        <input @bind="PipelineBranch" class="form-control" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted">YAML File Path</label>
+                        <input @bind="PipelineYamlPath" placeholder="e.g. .orchestrator/ci.yml" class="form-control" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(DetailsError))
+                    {
+                        <div class="alert alert-danger py-2 px-3 mb-3" style="font-size: 0.85rem;">
+                            @DetailsError
+                        </div>
+                    }
+
+                    <button class="btn btn-primary w-100" @onclick="SavePipelineDetails" disabled="@SavingDetails">
+                        @(SavingDetails ? "Saving Settings..." : "Save Settings")
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @* RIGHT COLUMN: YAML EDITOR *@
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column" style="min-height: 580px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0" style="font-size: 1.2rem;">Pipeline Workflow (YAML)</h3>
+                        <span class="badge bg-secondary font-monospace">YAML Format</span>
+                    </div>
+
+                    <p class="text-muted small mb-3">
+                        This YAML describes the build stages and runner steps. 
+                        Validations are applied to commands, images, and stages upon saving.
+                    </p>
+
+                    <div class="flex-grow-1 mb-3">
+                        <textarea @bind="YamlContent" 
+                                  class="editor-textarea h-100" 
+                                  placeholder="# Define your pipeline stages and jobs here..."
+                                  spellcheck="false"></textarea>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(YamlError))
+                    {
+                        <div class="alert alert-danger py-2 px-3 mb-3 font-monospace" style="font-size: 0.8rem; white-space: pre-wrap;">
+                            <strong>Validation Error:</strong><br />@YamlError
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-secondary" @onclick="ResetYaml">Discard Changes</button>
+                        <button class="btn btn-success" @onclick="SaveYamlContent" disabled="@SavingYaml">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                            </svg>
+                            <span>@(SavingYaml ? "Validating & Saving..." : "Save & Validate YAML")</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid PipelineId { get; set; }
+
+    private bool Loading = true;
+    private bool SavingDetails;
+    private bool SavingYaml;
+    
+    private PipelineResponse? Pipeline;
+    
+    private string PipelineName = "";
+    private string PipelineRepo = "";
+    private string PipelineBranch = "";
+    private string PipelineYamlPath = "";
+    private string YamlContent = "";
+    
+    private string? DetailsError;
+    private string? YamlError;
+    private string? GlobalMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPipeline();
+    }
+
+    private async Task LoadPipeline()
+    {
+        Loading = true;
+        DetailsError = null;
+        YamlError = null;
+        try
+        {
+            Pipeline = await Api.GetPipelineAsync(PipelineId);
+            if (Pipeline != null)
+            {
+                PipelineName = Pipeline.Name;
+                PipelineRepo = Pipeline.Repo;
+                PipelineBranch = Pipeline.Branch;
+                PipelineYamlPath = Pipeline.YamlPath;
+                
+                YamlContent = Pipeline.YamlContent ?? GetDefaultYamlTemplate();
+            }
+        }
+        catch (Exception ex)
+        {
+            DetailsError = $"Failed to load pipeline: {ex.Message}";
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private async Task SavePipelineDetails()
+    {
+        if (string.IsNullOrWhiteSpace(PipelineName) || string.IsNullOrWhiteSpace(PipelineRepo))
+        {
+            DetailsError = "Name and Repository URL are required.";
+            return;
+        }
+
+        SavingDetails = true;
+        DetailsError = null;
+        GlobalMessage = null;
+        try
+        {
+            await Api.UpdatePipelineAsync(PipelineId, PipelineName, PipelineRepo, PipelineBranch, PipelineYamlPath);
+            GlobalMessage = "Pipeline settings saved successfully.";
+            
+            // Reload to sync
+            var updated = await Api.GetPipelineAsync(PipelineId);
+            if (updated != null)
+            {
+                PipelineName = updated.Name;
+                PipelineRepo = updated.Repo;
+                PipelineBranch = updated.Branch;
+            }
+        }
+        catch (Exception ex)
+        {
+            DetailsError = ex.Message;
+        }
+        finally
+        {
+            SavingDetails = false;
+        }
+    }
+
+    private async Task SaveYamlContent()
+    {
+        if (string.IsNullOrWhiteSpace(YamlContent))
+        {
+            YamlError = "YAML content cannot be empty.";
+            return;
+        }
+
+        SavingYaml = true;
+        YamlError = null;
+        GlobalMessage = null;
+        try
+        {
+            await Api.UpdatePipelineYamlAsync(PipelineId, YamlContent);
+            GlobalMessage = "Pipeline YAML updated and validated successfully.";
+        }
+        catch (Exception ex)
+        {
+            // Clean up the error message if it is generic
+            YamlError = ex.Message;
+        }
+        finally
+        {
+            SavingYaml = false;
+        }
+    }
+
+    private void ResetYaml()
+    {
+        YamlContent = Pipeline?.YamlContent ?? GetDefaultYamlTemplate();
+        YamlError = null;
+    }
+
+    private string GetDefaultYamlTemplate()
+    {
+        return @"# CI/CD Orchestrator pipeline
+stages:
+  - build
+  - test
+  - deploy
+
+jobs:
+  - name: build-job
+    stage: build
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    steps:
+      - run: dotnet restore
+      - run: dotnet build -c Release
+
+  - name: test-job
+    stage: test
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    steps:
+      - run: dotnet test --no-build -c Release
+";
+    }
+}

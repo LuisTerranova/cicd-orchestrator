@@ -11,7 +11,7 @@ public class RunnersEndpoints : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/runners").WithTags("Runners");
+        var group = app.MapGroup("/api/v1/runners").WithTags("Runners");
 
         group.MapGet("/", GetAllRunnersAsync);
         group.MapGet("/{id:guid}", GetRunnerByIdAsync);
@@ -62,17 +62,35 @@ public class RunnersEndpoints : IEndpoint
     }
 
     private static async Task<IResult> RegisterRunnerAsync(
-        RegisterRunnerCommand command,
+        RegisterRunnerRequest request,
         ICommandHandler<RegisterRunnerCommand, Guid> handler,
         IRunnerTokenGenerator tokenGenerator,
+        Microsoft.Extensions.Configuration.IConfiguration configuration,
         CancellationToken ct
     )
     {
+        var expectedToken = Environment.GetEnvironmentVariable("RUNNER_REGISTRATION_TOKEN")
+            ?? configuration["Auth:RegistrationToken"]
+            ?? "dev-token";
+
+        var providedToken = request.Token ?? "";
+        if (providedToken != expectedToken)
+        {
+            return Results.Json(new { error = "Unauthorized token" }, statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var name = request.Name ?? request.RunnerName ?? "unknown-runner";
+        var command = new RegisterRunnerCommand(
+            name,
+            request.Labels ?? Array.Empty<string>(),
+            request.Os ?? "unknown",
+            request.Arch ?? "unknown"
+        );
         var runnerId = await handler.HandleAsync(command, ct);
         var secret = tokenGenerator.GenerateToken(runnerId);
 
         return Results.Created(
-            $"/api/runners/{runnerId}",
+            $"/api/v1/runners/{runnerId}",
             new RegisterRunnerResponse(runnerId, secret)
         );
     }

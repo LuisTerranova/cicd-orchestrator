@@ -46,7 +46,12 @@ public sealed class LogCapturer : IDisposable
 
         if (state.BufferSize >= _maxSizeBytes)
         {
-            _ = FlushAsync(jobId, CancellationToken.None);
+            var capturedJobId = jobId;
+            Task.Run(async () =>
+            {
+                try { await FlushAsync(capturedJobId, CancellationToken.None); }
+                catch { /* best effort flush */ }
+            });
         }
     }
 

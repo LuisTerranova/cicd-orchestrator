@@ -69,9 +69,35 @@ public sealed class ConfigurationLoader
         )
             options.HeartbeatInterval = hbi;
 
-        // 4. Overlay CLI flags (already handled by CliRootCommand — applied externally)
-        // This is intentional: CLI flags are applied after Load returns, via the
-        // CliParseResult, so they always win regardless of env/YAML state.
+        if (GetEnv("RUNNER_RABBITMQ_HOST") is { } envRmqHost)
+            options.RabbitMqHost = envRmqHost;
+        if (GetEnv("RUNNER_RABBITMQ_USER") is { } envRmqUser)
+            options.RabbitMqUser = envRmqUser;
+        if (GetEnv("RUNNER_RABBITMQ_PASS") is { } envRmqPass)
+            options.RabbitMqPass = envRmqPass;
+        if (GetEnv("RUNNER_REGISTRATION_TOKEN") is { } envRegToken)
+            options.RegistrationToken = envRegToken;
+        if (GetEnv("RUNNER_ID") is { } envRunnerId)
+            options.RunnerId = envRunnerId;
+        if (GetEnv("RUNNER_SECRET") is { } envRunnerSecret)
+            options.RunnerSecret = envRunnerSecret;
+
+        // 4. Overlay CLI flags
+        if (cli is not null)
+        {
+            if (cli.HasOption("--server-url"))
+                options.ServerUrl = cli.GetValue<string>("--server-url") ?? options.ServerUrl;
+            if (cli.HasOption("--concurrency"))
+                options.Concurrency = cli.GetValue<int>("--concurrency");
+            if (cli.HasOption("--labels"))
+                options.Labels = cli.GetValue<string[]>("--labels") ?? options.Labels;
+            if (cli.HasOption("--registration-token"))
+                options.RegistrationToken = cli.GetValue<string>("--registration-token") ?? options.RegistrationToken;
+            if (cli.HasOption("--runner-id"))
+                options.RunnerId = cli.GetValue<string>("--runner-id") ?? options.RunnerId;
+            if (cli.HasOption("--runner-secret"))
+                options.RunnerSecret = cli.GetValue<string>("--runner-secret") ?? options.RunnerSecret;
+        }
 
         return options;
     }

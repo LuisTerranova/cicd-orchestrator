@@ -1,0 +1,282 @@
+@page "/pipelines"
+@inject OrchestratorApiClient Api
+@inject NavigationManager Nav
+
+<PageTitle>Pipelines - Orchestrator</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Build Pipelines</h1>
+        <p class="text-muted mb-0">Define, orchestrate, and edit your project integration workflows.</p>
+    </div>
+    <button class="btn btn-primary" @onclick="ShowCreateForm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>New Pipeline</span>
+    </button>
+</div>
+
+@if (Loading)
+{
+    <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-3 text-muted">Loading pipelines...</span>
+    </div>
+}
+else if (PipelineList is null || PipelineList.Length == 0)
+{
+    <div class="card py-5 text-center">
+        <div class="card-body">
+            <h5 class="text-muted">No pipelines configured</h5>
+            <p class="text-muted mb-3">Get started by linking a repository and setting up your CI/CD flow.</p>
+            <button class="btn btn-primary btn-sm" @onclick="ShowCreateForm">Create your first pipeline</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="pipelines-grid">
+        @foreach (var p in PipelineList)
+        {
+            <div class="card pipeline-card">
+                <div class="card-body pipeline-card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="mb-1" style="font-size: 1.25rem;">@p.Name</h4>
+                            <span class="text-muted font-monospace" style="font-size: 0.8rem;">@p.Branch</span>
+                        </div>
+                        <div>
+                            @if (p.HasYaml)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1" style="font-size: 0.75rem;">
+                                    YAML OK
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1" style="font-size: 0.75rem;">
+                                    NO YAML
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-muted" style="font-size: 0.85rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                            </svg>
+                            <span class="text-truncate">@p.Repo</span>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            Created: @p.CreatedAt.ToLocalTime().ToString("g")
+                        </div>
+                    </div>
+
+                    <div class="pipeline-card-actions">
+                        <button class="btn btn-sm btn-success" @onclick="() => TriggerBuild(p.Id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Run</span>
+                        </button>
+                        <a href="/pipelines/@p.Id/builds" class="btn btn-sm btn-outline-primary">
+                            Builds
+                        </a>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick='() => Nav.NavigateTo($"/pipelines/{p.Id}/edit")'>
+                            Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDelete(p)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* CREATE PIPELINE MODAL DIALOG *@
+@if (ShowForm)
+{
+    <div class="modal-overlay">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="mb-0">Create Pipeline</h5>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="HideCreateForm">✕</button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Pipeline Name</label>
+                    <input @bind="NewName" placeholder="e.g. backend-services-ci" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">Repository Git URL</label>
+                    <input @bind="NewRepo" placeholder="e.g. https://github.com/user/repo.git" class="form-control" />
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Default Branch</label>
+                        <input @bind="NewBranch" placeholder="main" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">YAML Config Path</label>
+                        <input @bind="NewYamlPath" placeholder="e.g. .orchestrator/ci.yml" class="form-control" />
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Error))
+                {
+                    <div class="text-danger mt-2" style="font-size: 0.85rem;">@Error</div>
+                }
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn btn-outline-secondary" @onclick="HideCreateForm">Cancel</button>
+                <button class="btn btn-primary" @onclick="CreatePipeline" disabled="@Creating">
+                    @(Creating ? "Creating..." : "Create Pipeline")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* CONFIRM DELETE DIALOG *@
+@if (PipelineToDelete != null)
+{
+    <div class="modal-overlay">
+        <div class="modal-content-custom" style="max-width: 450px;">
+            <div class="modal-header-custom">
+                <h5 class="mb-0 text-danger">Delete Pipeline</h5>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="CancelDelete">✕</button>
+            </div>
+            <div class="modal-body-custom">
+                <p>Are you sure you want to delete pipeline <strong>@PipelineToDelete.Name</strong>?</p>
+                <div class="alert alert-danger mb-0" style="font-size: 0.85rem; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.2);">
+                    <strong>Warning:</strong> This will delete all associated builds, jobs, artifacts, and log entries from the database. This action is irreversible.
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn btn-outline-secondary" @onclick="CancelDelete">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeletePipeline" disabled="@Deleting">
+                    @(Deleting ? "Deleting..." : "Delete Permanently")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool Loading = true;
+    private bool ShowForm;
+    private bool Creating;
+    private bool Deleting;
+    private string? Error;
+    
+    private string NewName = "";
+    private string NewRepo = "";
+    private string NewBranch = "main";
+    private string NewYamlPath = ".orchestrator/ci.yml";
+    
+    private PipelineResponse[]? PipelineList;
+    private PipelineResponse? PipelineToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPipelines();
+    }
+
+    private async Task LoadPipelines()
+    {
+        Loading = true;
+        try
+        {
+            PipelineList = await Api.GetPipelinesAsync(1, 50);
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private void ShowCreateForm() => ShowForm = true;
+    
+    private void HideCreateForm()
+    {
+        ShowForm = false;
+        Error = null;
+    }
+
+    private async Task CreatePipeline()
+    {
+        if (string.IsNullOrWhiteSpace(NewName) || string.IsNullOrWhiteSpace(NewRepo))
+        {
+            Error = "Name and Repository URL are required.";
+            return;
+        }
+
+        Creating = true;
+        Error = null;
+        try
+        {
+            await Api.CreatePipelineAsync(NewName, NewRepo, NewBranch, NewYamlPath);
+            await LoadPipelines();
+            ShowForm = false;
+            NewName = NewRepo = "";
+            NewBranch = "main";
+            NewYamlPath = ".orchestrator/ci.yml";
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            Creating = false;
+        }
+    }
+
+    private async Task TriggerBuild(Guid pipelineId)
+    {
+        try
+        {
+            await Api.TriggerBuildAsync(pipelineId, "manual", DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
+            Nav.NavigateTo($"/pipelines/{pipelineId}/builds");
+        }
+        catch { }
+    }
+
+    private void ConfirmDelete(PipelineResponse pipeline)
+    {
+        PipelineToDelete = pipeline;
+    }
+
+    private void CancelDelete()
+    {
+        PipelineToDelete = null;
+    }
+
+    private async Task DeletePipeline()
+    {
+        if (PipelineToDelete == null) return;
+        Deleting = true;
+        try
+        {
+            await Api.DeletePipelineAsync(PipelineToDelete.Id);
+            PipelineToDelete = null;
+            await LoadPipelines();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            Deleting = false;
+        }
+    }
+}

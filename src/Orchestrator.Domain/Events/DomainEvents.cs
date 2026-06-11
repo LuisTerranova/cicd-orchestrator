@@ -32,6 +32,11 @@ public sealed record BuildCompletedEvent(Guid BuildId, BuildStatus Status) : IDo
     public DateTime OccurredOn { get; } = DateTime.UtcNow;
 }
 
+public sealed record BuildCancelledEvent(Guid BuildId) : IDomainEvent
+{
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+}
+
 public sealed record RunnerRegisteredEvent(Guid RunnerId, string Name) : IDomainEvent
 {
     public DateTime OccurredOn { get; } = DateTime.UtcNow;

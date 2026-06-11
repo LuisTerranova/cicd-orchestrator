@@ -1,15 +1,18 @@
 using System.Net.Http.Json;
 using System.Text;
+using Orchestrator.Runner.Registration;
 
 namespace Orchestrator.Runner.Logging;
 
 public sealed class LogUploader
 {
     private readonly HttpClient _http;
+    private readonly CredentialStore _credentials;
 
-    public LogUploader(HttpClient httpClient)
+    public LogUploader(HttpClient httpClient, CredentialStore credentials)
     {
         _http = httpClient;
+        _credentials = credentials;
     }
 
     // Uploads a log chunk with Content-Range header for resumable uploads.
@@ -31,13 +34,19 @@ public sealed class LogUploader
         }
 
         var bytes = Encoding.UTF8.GetBytes(content);
-        var request = new HttpRequestMessage(HttpMethod.Post, $"api/jobs/{jobId}/logs")
+        var request = new HttpRequestMessage(HttpMethod.Post, $"api/v1/jobs/{jobId}/logs")
         {
             Content = new ByteArrayContent(bytes),
         };
 
         // Inform the server where this chunk fits in the overall log stream.
-        request.Headers.Add("Content-Range", $"bytes {offset}-{offset + bytes.Length - 1}/*");
+        request.Content!.Headers.Add("Content-Range", $"bytes {offset}-{offset + bytes.Length - 1}/*");
+
+        var creds = await _credentials.LoadAsync();
+        if (creds?.Secret != null)
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", creds.Value.Secret);
+        }
 
         var response = await _http.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
@@ -55,11 +64,18 @@ public sealed class LogUploader
             File.Delete(markerPath);
         }
 
-        var response = await _http.PostAsJsonAsync(
-            $"api/jobs/{jobId}/logs/finalize",
-            new { totalLines },
-            ct
-        );
+        var request = new HttpRequestMessage(HttpMethod.Post, $"api/v1/jobs/{jobId}/logs/finalize")
+        {
+            Content = JsonContent.Create(new { totalLines })
+        };
+
+        var creds = await _credentials.LoadAsync();
+        if (creds?.Secret != null)
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", creds.Value.Secret);
+        }
+
+        var response = await _http.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
     }
 

@@ -14,22 +14,12 @@ public static class CommandHandlerExtensions
         services.AddScoped<THandler>();
         services.AddScoped<ICommandHandler<TCommand>>(sp =>
         {
-            var concreteHandler = sp.GetRequiredService<THandler>();
+            var handler = sp.GetRequiredService<THandler>();
             var dbContext = sp.GetRequiredService<OrchestratorDbContext>();
             var logger = sp.GetRequiredService<ILogger<LoggingCommandHandlerDecorator<TCommand>>>();
-
-            var uowDecorator = new UnitOfWorkCommandHandlerDecorator<TCommand>(
-                concreteHandler,
-                dbContext
-            );
-            var loggingDecorator = new LoggingCommandHandlerDecorator<TCommand>(
-                uowDecorator,
-                logger
-            );
-
-            return loggingDecorator;
+            var uow = new UnitOfWorkCommandHandlerDecorator<TCommand>(handler, dbContext);
+            return new LoggingCommandHandlerDecorator<TCommand>(uow, logger);
         });
-
         return services;
     }
 
@@ -41,24 +31,12 @@ public static class CommandHandlerExtensions
         services.AddScoped<THandler>();
         services.AddScoped<ICommandHandler<TCommand, TResult>>(sp =>
         {
-            var concreteHandler = sp.GetRequiredService<THandler>();
+            var handler = sp.GetRequiredService<THandler>();
             var dbContext = sp.GetRequiredService<OrchestratorDbContext>();
-            var logger = sp.GetRequiredService<
-                ILogger<LoggingCommandHandlerDecorator<TCommand, TResult>>
-            >();
-
-            var uowDecorator = new UnitOfWorkCommandHandlerDecorator<TCommand, TResult>(
-                concreteHandler,
-                dbContext
-            );
-            var loggingDecorator = new LoggingCommandHandlerDecorator<TCommand, TResult>(
-                uowDecorator,
-                logger
-            );
-
-            return loggingDecorator;
+            var logger = sp.GetRequiredService<ILogger<LoggingCommandHandlerDecorator<TCommand, TResult>>>();
+            var uow = new UnitOfWorkCommandHandlerDecorator<TCommand, TResult>(handler, dbContext);
+            return new LoggingCommandHandlerDecorator<TCommand, TResult>(uow, logger);
         });
-
         return services;
     }
 
@@ -74,7 +52,6 @@ public static class CommandHandlerExtensions
             var logger = sp.GetRequiredService<ILogger<LoggingCommandHandlerDecorator<TCommand>>>();
             return new LoggingCommandHandlerDecorator<TCommand>(concreteHandler, logger);
         });
-
         return services;
     }
 }

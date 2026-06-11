@@ -37,7 +37,7 @@ public sealed class RunnerRegistrar
         {
             try
             {
-                var response = await _http.PostAsJsonAsync("/api/runners/register", payload, ct);
+                var response = await _http.PostAsJsonAsync("/api/v1/runners/register", payload, ct);
                 response.EnsureSuccessStatusCode();
 
                 var result = await response.Content.ReadFromJsonAsync<RegisterResponse>(ct);

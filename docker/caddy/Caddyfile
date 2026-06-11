@@ -1,0 +1,15 @@
+# Development: HTTP localhost
+# Production: trocar por dominio real (ex: ci.example.com)
+http://localhost:8080 {
+
+    # API routes
+    @api {
+        path /api/* /api/v1/* /health /ready /metrics
+    }
+    reverse_proxy @api server:8080
+
+    # Blazor WASM static files (SPA fallback)
+    root * /usr/share/caddy
+    try_files {path} /index.html
+    file_server
+}

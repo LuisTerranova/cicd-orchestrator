@@ -116,6 +116,9 @@ namespace Orchestrator.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ExitCode")
+                        .HasColumnType("integer");
+
                     b.Property<Guid?>("RunnerId")
                         .HasColumnType("uuid");
 
@@ -203,6 +206,10 @@ namespace Orchestrator.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("YamlContent")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("YamlPath")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -260,6 +267,32 @@ namespace Orchestrator.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("Runners", (string)null);
+                });
+
+            modelBuilder.Entity("Orchestrator.Domain.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Orchestrator.Domain.Entities.Build", b =>

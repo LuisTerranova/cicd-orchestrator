@@ -13,6 +13,7 @@ public sealed class CancelJobHandler(IJobRepository jobs, IDomainEventDispatcher
             ?? throw new InvalidOperationException($"Job {command.JobId} not found");
 
         job.Cancel(command.Reason);
+        await jobs.UpdateAsync(job, ct);
         await eventDispatcher.DispatchAsync(job.DomainEvents, ct);
         job.ClearDomainEvents();
     }

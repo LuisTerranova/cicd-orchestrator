@@ -20,10 +20,11 @@ public static class MassTransitSetup
                 (ctx, cfg) =>
                 {
                     cfg.Host(
-                        options.ServerUrl,
+                        new Uri($"rabbitmq://{options.RabbitMqHost}:5672"),
                         h =>
                         {
-                            // Default guest/guest for local dev; configurable via connection string
+                            h.Username(options.RabbitMqUser);
+                            h.Password(options.RabbitMqPass);
                         }
                     );
 

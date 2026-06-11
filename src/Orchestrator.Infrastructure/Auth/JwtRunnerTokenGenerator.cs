@@ -1,56 +1,66 @@
-using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Orchestrator.Domain.Interfaces;
 
 namespace Orchestrator.Infrastructure.Auth;
 
-public class JwtRunnerTokenGenerator : IRunnerTokenGenerator
+public sealed class JwtRunnerTokenGenerator : IRunnerTokenGenerator
 {
-    private const string SecretKey =
-        "c3VwZXItc2VjcmV0LWtleS1mb3ItZGV2ZWxvcG1lbnQtcHVycG9zZXMtb25seQ==";
+    private readonly AuthOptions _options;
+
+    public JwtRunnerTokenGenerator(IOptions<AuthOptions> options)
+    {
+        _options = options.Value;
+    }
+
+    private string GetSecretKey()
+    {
+        return string.IsNullOrWhiteSpace(_options.SecretKey) || _options.SecretKey.Length < 32
+            ? "dev-secret-key-must-be-at-least-32-chars-long!"
+            : _options.SecretKey;
+    }
 
     public string GenerateToken(Guid runnerId)
     {
-        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        var payload = $"{runnerId}|{timestamp}";
-        var payloadBytes = Encoding.UTF8.GetBytes(payload);
-        var encodedPayload = Convert.ToBase64String(payloadBytes);
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var keyBytes = Encoding.UTF8.GetBytes(SecretKey);
-        var hash = HMACSHA256.HashData(keyBytes, payloadBytes);
-        var encodedSignature = Convert.ToBase64String(hash);
+        var token = new JwtSecurityToken(
+            issuer: "orchestrator",
+            audience: "runner",
+            claims: [new Claim("runnerId", runnerId.ToString())],
+            expires: DateTime.UtcNow.AddDays(_options.TokenExpirationDays),
+            signingCredentials: creds
+        );
 
-        return $"{encodedPayload}.{encodedSignature}";
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public bool ValidateToken(string token, out Guid runnerId)
     {
         runnerId = Guid.Empty;
 
-        if (string.IsNullOrEmpty(token))
-            return false;
-
-        var parts = token.Split('.');
-        if (parts.Length != 2)
-            return false;
-
         try
         {
-            var payloadBytes = Convert.FromBase64String(parts[0]);
-            var signatureBytes = Convert.FromBase64String(parts[1]);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
+            var handler = new JwtSecurityTokenHandler();
+            var result = handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = "orchestrator",
+                ValidateAudience = true,
+                ValidAudience = "runner",
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+            }, out _);
 
-            var keyBytes = Encoding.UTF8.GetBytes(SecretKey);
-            var expectedHash = HMACSHA256.HashData(keyBytes, payloadBytes);
-
-            if (!CryptographicOperations.FixedTimeEquals(signatureBytes, expectedHash))
-                return false;
-
-            var payload = Encoding.UTF8.GetString(payloadBytes);
-            var payloadParts = payload.Split('|');
-            if (payloadParts.Length != 2)
-                return false;
-
-            return Guid.TryParse(payloadParts[0], out runnerId);
+            var claim = result.FindFirst("runnerId")?.Value;
+            return Guid.TryParse(claim, out runnerId);
         }
         catch
         {

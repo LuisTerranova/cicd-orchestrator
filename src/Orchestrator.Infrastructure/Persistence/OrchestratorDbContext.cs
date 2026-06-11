@@ -14,6 +14,7 @@ public class OrchestratorDbContext : DbContext
     public DbSet<Runner> Runners => Set<Runner>();
     public DbSet<LogMetadata> Logs => Set<LogMetadata>();
     public DbSet<Artifact> Artifacts => Set<Artifact>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

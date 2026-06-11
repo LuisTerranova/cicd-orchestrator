@@ -82,10 +82,23 @@ public sealed class ContainerCleanupService : BackgroundService
 
         if (Directory.Exists(_options.WorkspacePath))
         {
+            var now = DateTime.UtcNow;
+            var activeJobIds = new HashSet<Guid>(_state.ActiveJobIds);
+
             foreach (var dir in Directory.GetDirectories(_options.WorkspacePath))
             {
                 try
                 {
+                    // Only remove workspaces older than 1h
+                    var dirInfo = new DirectoryInfo(dir);
+                    if (now - dirInfo.CreationTimeUtc < TimeSpan.FromHours(1))
+                        continue;
+
+                    // Skip directories that correspond to active job IDs
+                    var dirName = Path.GetFileName(dir);
+                    if (Guid.TryParse(dirName, out var jobId) && activeJobIds.Contains(jobId))
+                        continue;
+
                     Directory.Delete(dir, recursive: true);
                     _logger.LogInformation("Cleaned workspace {Dir}", dir);
                 }

@@ -1,0 +1,91 @@
+@inject IJSRuntime JS
+
+<div class="log-viewer-container">
+    <div class="log-toolbar d-flex align-items-center justify-content-between gap-3 p-3" style="background: rgba(18, 20, 32, 0.9); border-bottom: 1px solid var(--border-color); border-radius: 12px 12px 0 0;">
+        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 400px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="text-muted">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input @bind="SearchTerm" @bind:event="oninput" placeholder="Filter log outputs..." class="form-control form-control-sm border-0 bg-transparent text-white font-monospace p-0" style="outline: none; box-shadow: none;" />
+            @if (!string.IsNullOrEmpty(SearchTerm))
+            {
+                <button class="btn btn-sm p-0 text-muted hover-white" @onclick="ClearSearch">✕</button>
+            }
+        </div>
+        
+        <div class="d-flex align-items-center gap-3">
+            <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+                <input class="form-check-input" type="checkbox" id="autoScrollSwitch" @bind="AutoScroll" />
+                <label class="form-check-label text-muted small user-select-none" for="autoScrollSwitch">Auto-scroll</label>
+            </div>
+            <span class="text-muted font-monospace small" style="font-size: 0.8rem;">@FilteredLines.Count / @Lines.Count lines</span>
+        </div>
+    </div>
+
+    <div class="log-viewer" id="logViewerContainer" style="border-radius: 0 0 12px 12px; height: 500px; overflow-y: auto;">
+        <div class="log-content font-monospace" style="font-size: 0.8rem;">
+            @for (var i = 0; i < FilteredLines.Count; i++)
+            {
+                var lineIndex = i;
+                var line = FilteredLines[lineIndex];
+                <div class="d-flex align-items-start log-line @GetLineClass(line)">
+                    <span class="text-muted text-end user-select-none pe-3" style="width: 50px; opacity: 0.4;">@(lineIndex + 1)</span>
+                    <span class="flex-grow-1 text-white-50" style="white-space: pre-wrap; word-break: break-all;">@line</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .log-viewer-container {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .hover-white:hover {
+        color: white !important;
+    }
+</style>
+
+@code {
+    [Parameter] public List<string> Lines { get; set; } = new();
+    [Parameter] public EventCallback<int> LoadMore { get; set; }
+
+    private string? SearchTerm;
+    private bool AutoScroll = true;
+
+    private List<string> FilteredLines => string.IsNullOrEmpty(SearchTerm)
+        ? Lines
+        : Lines.Where(l => l.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AutoScroll)
+        {
+            await ScrollToBottom();
+        }
+    }
+
+    private void ClearSearch() => SearchTerm = null;
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await Task.Delay(50);
+            await JS.InvokeVoidAsync("scrollToBottom", "logViewerContainer");
+        }
+        catch { }
+    }
+
+    private static string GetLineClass(string line)
+    {
+        var upper = line.ToUpperInvariant();
+        if (upper.Contains("ERROR") || upper.Contains("FATAL") || upper.Contains("EXCEPTION"))
+            return "log-error";
+        if (upper.Contains("WARN") || upper.Contains("WARNING"))
+            return "log-warning";
+        return "";
+    }
+}

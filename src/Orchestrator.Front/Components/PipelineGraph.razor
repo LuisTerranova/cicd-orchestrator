@@ -1,0 +1,39 @@
+<div class="pipeline-graph">
+    @foreach (var layer in Layers)
+    {
+        <div class="dag-layer">
+            @foreach (var stage in layer)
+            {
+                <div class="dag-node @GetNodeClass(stage.Status)">
+                    <span class="dag-node-name">@stage.StageName</span>
+                    <span class="dag-node-status"><StatusBadge Status="@stage.Status" /></span>
+                </div>
+                @if (layer.IndexOf(stage) < layer.Count - 1)
+                {
+                    <div class="dag-arrow">→</div>
+                }
+            }
+        </div>
+        @if (Layers.IndexOf(layer) < Layers.Count - 1)
+        {
+            <div class="dag-layer-connector">↓</div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public List<List<StageWithStatus>> Layers { get; set; } = new();
+
+    private static string GetNodeClass(string status) => status?.ToLowerInvariant() switch
+    {
+        "passed" => "dag-node-passed",
+        "running" => "dag-node-running",
+        "failed" => "dag-node-failed",
+        "queued" => "dag-node-queued",
+        "skipped" => "dag-node-skipped",
+        "cancelled" => "dag-node-cancelled",
+        _ => "dag-node-pending",
+    };
+
+    public sealed record StageWithStatus(string StageName, string Status);
+}

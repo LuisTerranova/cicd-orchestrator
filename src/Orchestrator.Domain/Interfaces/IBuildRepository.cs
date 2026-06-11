@@ -9,6 +9,12 @@ public interface IBuildRepository
         Guid pipelineId,
         CancellationToken ct = default
     );
+    Task<Domain.Common.PagedResult<Build>> GetPagedByPipelineIdAsync(
+        Guid pipelineId,
+        int page,
+        int pageSize,
+        CancellationToken ct = default
+    );
     Task<IReadOnlyCollection<Build>> GetByStatusAsync(
         ValueObjects.BuildStatus status,
         CancellationToken ct = default

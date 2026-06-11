@@ -33,12 +33,15 @@ public class EfRunnerRepository(OrchestratorDbContext context) : IRunnerReposito
         return new Domain.Common.PagedResult<Runner>(items, totalCount);
     }
 
-    public async Task AddAsync(Runner runner, CancellationToken ct = default) =>
+    public async Task AddAsync(Runner runner, CancellationToken ct = default)
+    {
         await context.Runners.AddAsync(runner, ct);
+        await context.SaveChangesAsync(ct);
+    }
 
-    public Task UpdateAsync(Runner runner, CancellationToken ct = default)
+    public async Task UpdateAsync(Runner runner, CancellationToken ct = default)
     {
         context.Runners.Update(runner);
-        return Task.CompletedTask;
+        await context.SaveChangesAsync(ct);
     }
 }

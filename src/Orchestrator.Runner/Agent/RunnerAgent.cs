@@ -23,6 +23,7 @@ public sealed class RunnerAgent : IHostedLifecycleService
     private readonly ContainerCleanupService _cleanup;
     private readonly ILogger<RunnerAgent> _logger;
     private string _runnerId = string.Empty;
+    private CancellationTokenSource? _receiveCts;
 
     public RunnerAgent(
         RunnerOptions options,
@@ -53,14 +54,19 @@ public sealed class RunnerAgent : IHostedLifecycleService
 
     public async Task StartAsync(CancellationToken ct)
     {
-        // Step 1: Register or load existing credentials
         _logger.LogInformation(
             "Runner starting — name: {Name}, concurrency: {Concurrency}",
             _options.Name,
             _options.Concurrency
         );
 
-        if (_credentialStore.Exists())
+        if (!string.IsNullOrEmpty(_options.RunnerId) && !string.IsNullOrEmpty(_options.RunnerSecret))
+        {
+            _runnerId = _options.RunnerId;
+            await _credentialStore.SaveAsync(_options.RunnerId, _options.RunnerSecret);
+            _logger.LogInformation("Using credentials from startup config for runner {RunnerId}", _runnerId);
+        }
+        else if (_credentialStore.Exists())
         {
             var creds = await _credentialStore.LoadAsync();
             _runnerId = creds.Value.RunnerId;
@@ -68,23 +74,17 @@ public sealed class RunnerAgent : IHostedLifecycleService
         }
         else
         {
-            var token = Environment.GetEnvironmentVariable("RUNNER_REGISTRATION_TOKEN");
+            var token = _options.RegistrationToken;
             var (runnerId, secret) = await _registrar.RegisterAsync(token, ct);
             await _credentialStore.SaveAsync(runnerId, secret);
             _runnerId = runnerId;
-            _logger.LogInformation("Registered new runner {RunnerId}", _runnerId);
         }
 
-        // Step 2: Establish WebSocket connection
         await _webSocket.ConnectAsync(ct);
+        await RunReconcileAndCleanupAsync(ct);
 
-        // Step 3: Reconcile with server
-        await _reconciliator.ReconcileAsync(_runnerId, "idle", [], ct);
-
-        // Step 4: Cleanup orphaned containers from previous runs
-        var orphaned = await _cleanup.CleanAsync(_runnerId, ct);
-        if (orphaned > 0)
-            _logger.LogInformation("Cleaned {Count} orphaned containers", orphaned);
+        _receiveCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        _ = RunReceiveLoopAsync(_receiveCts.Token);
 
         _logger.LogInformation("Runner {RunnerId} ready. Awaiting jobs.", _runnerId);
     }
@@ -93,6 +93,8 @@ public sealed class RunnerAgent : IHostedLifecycleService
     {
         _logger.LogInformation("Shutdown requested. Draining jobs...");
         _state.Draining = true;
+
+        _receiveCts?.Cancel();
 
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await _state.WaitForActiveJobs(timeout.Token);
@@ -114,5 +116,29 @@ public sealed class RunnerAgent : IHostedLifecycleService
     public async Task StopAsync(CancellationToken ct)
     {
         await _cleanup.CleanAsync(_runnerId, ct);
+    }
+
+    private async Task RunReceiveLoopAsync(CancellationToken ct)
+    {
+        await _webSocket.RunReceiveLoopAsync(
+            onMessage: async (msg, _) =>
+            {
+                _logger.LogDebug("WebSocket message received: {Msg}", msg);
+            },
+            onReconnect: async ct2 =>
+            {
+                await RunReconcileAndCleanupAsync(ct2);
+            },
+            ct
+        );
+    }
+
+    private async Task RunReconcileAndCleanupAsync(CancellationToken ct)
+    {
+        var status = _state.ActiveJobIds.Length > 0 ? "busy" : "idle";
+        await _reconciliator.ReconcileAsync(_runnerId, status, _state.ActiveJobIds, ct);
+        var orphaned = await _cleanup.CleanAsync(_runnerId, ct);
+        if (orphaned > 0)
+            _logger.LogInformation("Cleaned {Count} orphaned containers", orphaned);
     }
 }

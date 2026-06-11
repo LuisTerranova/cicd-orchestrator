@@ -26,6 +26,7 @@ public sealed class ContainerStepRunner
     // Full container lifecycle: pull image → write step script → create container
     // (with workspace mount) → start → exec script → return result.
     // The script path inside the container is derived from /workspace mount point.
+    // Container cleanup (stop + remove) is guaranteed via a finally block.
     public async Task<JobStepResult> RunAsync(
         JobStep step,
         Guid jobId,
@@ -36,6 +37,7 @@ public sealed class ContainerStepRunner
     )
     {
         var startedAt = DateTime.UtcNow;
+        string? containerId = null;
 
         try
         {
@@ -43,7 +45,7 @@ public sealed class ContainerStepRunner
 
             _scriptWriter.WriteScript(step, jobId, workspacePath);
             // Translate host script path to container-internal path via workspace mount.
-            var containerScriptPath = $"/workspace/{jobId}/steps/{Sanitize(step.Name)}.sh";
+            var containerScriptPath = $"/workspace/steps/{Sanitize(step.Name)}.sh";
 
             var spec = new Container.ContainerSpec(
                 JobId: jobId,
@@ -53,7 +55,7 @@ public sealed class ContainerStepRunner
                 SecretsPath: "/run/secrets"
             );
 
-            var containerId = await _podmanCli.CreateAsync(image, spec, ct);
+            containerId = await _podmanCli.CreateAsync(image, spec, ct);
             await _podmanCli.StartAsync(containerId, ct);
 
             var shell = step.Shell ?? "bash";
@@ -70,6 +72,16 @@ public sealed class ContainerStepRunner
         {
             _logger.LogError(ex, "Container step {StepName} failed", step.Name);
             return new JobStepResult(step.Name, "failed", -1, DateTime.UtcNow - startedAt);
+        }
+        finally
+        {
+            if (containerId is not null)
+            {
+                try { await _podmanCli.StopAsync(containerId, TimeSpan.FromSeconds(10), CancellationToken.None); }
+                catch { /* best effort */ }
+                try { await _podmanCli.RemoveAsync(containerId, CancellationToken.None); }
+                catch { /* best effort */ }
+            }
         }
     }
 }

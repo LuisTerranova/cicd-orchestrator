@@ -33,7 +33,6 @@ public class OrchestratorDbContextFactory : IDesignTimeDbContextFactory<Orchestr
                     }
                     catch
                     {
-                        // Ignore exceptions reading .env at design time
                     }
                     break;
                 }
@@ -41,9 +40,9 @@ public class OrchestratorDbContextFactory : IDesignTimeDbContextFactory<Orchestr
             }
         }
 
-        var connStr =
-            Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-            ?? "Host=localhost;Database=orchestrator;Username=postgres;Password=postgres;SSL Mode=Disable";
+        var connStr = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+            ?? throw new InvalidOperationException(
+                "Connection string not configured. Set DB_CONNECTION_STRING environment variable.");
 
         connStr = DbConnectionHelper.FormatConnectionString(connStr);
 

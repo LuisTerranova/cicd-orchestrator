@@ -1,9 +1,9 @@
-using System;
+using System.Text.RegularExpressions;
 using Npgsql;
 
 namespace Orchestrator.Infrastructure.Persistence;
 
-public static class DbConnectionHelper
+public static partial class DbConnectionHelper
 {
     public static string FormatConnectionString(string connectionStringOrUri)
     {
@@ -36,7 +36,6 @@ public static class DbConnectionHelper
                 Password = password,
             };
 
-            // Parse query parameters (e.g. sslmode)
             var query = uri.Query;
             if (!string.IsNullOrEmpty(query))
             {
@@ -51,30 +50,16 @@ public static class DbConnectionHelper
 
                         if (key.Equals("sslmode", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (val.Equals("require", StringComparison.OrdinalIgnoreCase))
+                            builder.SslMode = val.ToLowerInvariant() switch
                             {
-                                builder.SslMode = SslMode.Require;
-                            }
-                            else if (val.Equals("disable", StringComparison.OrdinalIgnoreCase))
-                            {
-                                builder.SslMode = SslMode.Disable;
-                            }
-                            else if (val.Equals("prefer", StringComparison.OrdinalIgnoreCase))
-                            {
-                                builder.SslMode = SslMode.Prefer;
-                            }
-                            else if (val.Equals("allow", StringComparison.OrdinalIgnoreCase))
-                            {
-                                builder.SslMode = SslMode.Allow;
-                            }
-                            else if (val.Equals("verify-ca", StringComparison.OrdinalIgnoreCase))
-                            {
-                                builder.SslMode = SslMode.VerifyCA;
-                            }
-                            else if (val.Equals("verify-full", StringComparison.OrdinalIgnoreCase))
-                            {
-                                builder.SslMode = SslMode.VerifyFull;
-                            }
+                                "require" => SslMode.Require,
+                                "disable" => SslMode.Disable,
+                                "prefer" => SslMode.Prefer,
+                                "allow" => SslMode.Allow,
+                                "verify-ca" or "verify_ca" => SslMode.VerifyCA,
+                                "verify-full" or "verify_full" => SslMode.VerifyFull,
+                                _ => builder.SslMode,
+                            };
                         }
                         else
                         {
@@ -88,7 +73,18 @@ public static class DbConnectionHelper
         }
         catch
         {
-            return connectionStringOrUri; // Fallback to original connection string if parsing fails
+            return connectionStringOrUri;
         }
     }
+
+    public static string SanitizeConnectionString(string connStr)
+    {
+        if (string.IsNullOrEmpty(connStr))
+            return connStr;
+
+        return PasswordPattern().Replace(connStr, "Password=***");
+    }
+
+    [GeneratedRegex(@"Password\s*=\s*[^;]+", RegexOptions.IgnoreCase)]
+    private static partial Regex PasswordPattern();
 }

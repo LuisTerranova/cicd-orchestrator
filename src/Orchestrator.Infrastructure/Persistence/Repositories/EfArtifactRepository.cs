@@ -14,6 +14,9 @@ public class EfArtifactRepository(OrchestratorDbContext context) : IArtifactRepo
         CancellationToken ct = default
     ) => await context.Artifacts.Where(a => a.BuildId == buildId).ToListAsync(ct);
 
-    public async Task AddAsync(Artifact artifact, CancellationToken ct = default) =>
+    public async Task AddAsync(Artifact artifact, CancellationToken ct = default)
+    {
         await context.Artifacts.AddAsync(artifact, ct);
+        await context.SaveChangesAsync(ct);
+    }
 }

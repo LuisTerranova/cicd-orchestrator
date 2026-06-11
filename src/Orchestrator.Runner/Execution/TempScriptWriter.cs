@@ -8,7 +8,7 @@ public sealed class TempScriptWriter
 {
     public string WriteScript(JobStep step, Guid jobId, string workspacePath)
     {
-        var scriptDir = Path.Combine(workspacePath, jobId.ToString(), "steps");
+        var scriptDir = Path.Combine(workspacePath, "steps");
         Directory.CreateDirectory(scriptDir);
 
         var scriptPath = Path.Combine(scriptDir, $"{Sanitize(step.Name)}.sh");

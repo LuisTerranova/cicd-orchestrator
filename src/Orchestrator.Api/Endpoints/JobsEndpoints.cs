@@ -8,7 +8,7 @@ public class JobsEndpoints : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/jobs").WithTags("Jobs");
+        var group = app.MapGroup("/api/v1/jobs").WithTags("Jobs");
 
         group.MapPost("/{jobId:guid}/assign", AssignJobAsync);
         group.MapPost("/{jobId:guid}/cancel", CancelJobAsync);

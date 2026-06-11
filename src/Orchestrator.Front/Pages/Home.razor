@@ -1,7 +1,193 @@
-﻿@page "/"
+@page "/"
+@inject OrchestratorApiClient Api
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard - Orchestrator</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Control Dashboard</h1>
+        <p class="text-muted mb-0">Real-time status of your pipelines, builds, and runners.</p>
+    </div>
+</div>
 
-Welcome to your new app.
+@if (Loading)
+{
+    <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-3 text-muted">Retrieving system telemetry...</span>
+    </div>
+}
+else
+{
+    <div class="row mb-5 g-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title text-muted mb-0">Total Pipelines</h5>
+                        <div class="p-2 rounded-3" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="card-value">@TotalPipelines</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title text-muted mb-0">Builds Today</h5>
+                        <div class="p-2 rounded-3" style="background: rgba(168, 85, 247, 0.1); color: var(--secondary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="card-value">@BuildsToday</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title text-muted mb-0">Runners Online</h5>
+                        <div class="p-2 rounded-3" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="card-value">@RunnersOnline</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title text-muted mb-0">Failed Today</h5>
+                        <div class="p-2 rounded-3" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="card-value text-danger">@FailedBuilds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Recent Build Deployments</h3>
+    </div>
+
+    @if (RecentBuilds.Count == 0)
+    {
+        <div class="card py-5 text-center">
+            <div class="card-body">
+                <p class="text-muted mb-0">No recent build executions found. Trigger a pipeline build to get started.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Build ID</th>
+                        <th>Pipeline Name</th>
+                        <th>Status</th>
+                        <th>Trigger Event</th>
+                        <th>Commit SHA</th>
+                        <th>Execution Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in RecentBuilds)
+                    {
+                        <tr>
+                            <td><code style="color: var(--primary);">@b.Id.ToString()[..8]</code></td>
+                            <td><strong>@b.PipelineName</strong></td>
+                            <td><StatusBadge Status="@b.Status" /></td>
+                            <td>
+                                <span class="text-capitalize text-muted">@b.TriggerEvent</span>
+                            </td>
+                            <td>
+                                <code style="background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 4px;">
+                                    @(b.CommitSha.Length > 8 ? b.CommitSha[..8] : b.CommitSha)
+                                </code>
+                            </td>
+                            <td>@b.CreatedAt.ToLocalTime().ToString("g")</td>
+                            <td class="text-end">
+                                <a href="/builds/@b.Id" class="btn btn-sm btn-outline-primary">
+                                    <span>Inspect</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private bool Loading = true;
+    private int TotalPipelines;
+    private int BuildsToday;
+    private int RunnersOnline;
+    private int FailedBuilds;
+    private List<BuildDetailResponse> RecentBuilds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var pipelines = await Api.GetPipelinesAsync(1, 100);
+            TotalPipelines = pipelines?.Length ?? 0;
+
+            var runners = await Api.GetRunnersAsync(1, 100);
+            RunnersOnline = runners?.Count(r => r.Status is "idle" or "busy") ?? 0;
+
+            var allBuilds = new List<BuildDetailResponse>();
+
+            if (pipelines is not null)
+            {
+                foreach (var p in pipelines.Take(5))
+                {
+                    try
+                    {
+                        var result = await Api.GetBuildsDetailAsync(p.Id, 1, 5);
+                        if (result?.Data is not null) allBuilds.AddRange(result.Data);
+                    }
+                    catch { }
+                }
+            }
+
+            var today = DateTime.UtcNow.Date;
+            BuildsToday = allBuilds.Count(b => b.CreatedAt >= today);
+            FailedBuilds = allBuilds.Count(b => b.Status == "Failed" && b.CreatedAt >= today);
+
+            RecentBuilds = allBuilds
+                .OrderByDescending(b => b.CreatedAt)
+                .Take(10)
+                .ToList();
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+}

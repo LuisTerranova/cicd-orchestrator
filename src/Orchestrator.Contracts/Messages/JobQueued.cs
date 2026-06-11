@@ -18,7 +18,10 @@ public sealed record JobQueued(
     string[] Labels,
     int Priority,
     int Version,
-    string WorkspacePath
+    string WorkspacePath,
+    string MessageId = "",
+    DateTime Timestamp = default,
+    string TraceId = ""
 );
 
 public sealed record JobStep(

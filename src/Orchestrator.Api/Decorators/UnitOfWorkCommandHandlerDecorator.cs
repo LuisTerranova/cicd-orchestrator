@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Orchestrator.Application.Common;
 using Orchestrator.Infrastructure.Persistence;
 
@@ -10,8 +11,18 @@ public sealed class UnitOfWorkCommandHandlerDecorator<TCommand>(
 {
     public async Task HandleAsync(TCommand command, CancellationToken ct = default)
     {
-        await decoratee.HandleAsync(command, ct);
-        await dbContext.SaveChangesAsync(ct);
+        await using var tx = await dbContext.Database.BeginTransactionAsync(ct);
+        try
+        {
+            await decoratee.HandleAsync(command, ct);
+            await dbContext.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+        }
+        catch
+        {
+            await tx.RollbackAsync(CancellationToken.None);
+            throw;
+        }
     }
 }
 
@@ -22,8 +33,18 @@ public sealed class UnitOfWorkCommandHandlerDecorator<TCommand, TResult>(
 {
     public async Task<TResult> HandleAsync(TCommand command, CancellationToken ct = default)
     {
-        var result = await decoratee.HandleAsync(command, ct);
-        await dbContext.SaveChangesAsync(ct);
-        return result;
+        await using var tx = await dbContext.Database.BeginTransactionAsync(ct);
+        try
+        {
+            var result = await decoratee.HandleAsync(command, ct);
+            await dbContext.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+            return result;
+        }
+        catch
+        {
+            await tx.RollbackAsync(CancellationToken.None);
+            throw;
+        }
     }
 }

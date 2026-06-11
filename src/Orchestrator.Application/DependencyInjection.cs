@@ -13,6 +13,7 @@ public static class DependencyInjection
         // Register Queries (standard Scoped registration)
         services.AddScoped<GetBuildByIdQuery>();
         services.AddScoped<GetBuildsByPipelineIdQuery>();
+        services.AddScoped<GetBuildsByPipelineDetailQuery>();
         services.AddScoped<GetLogByJobIdQuery>();
         services.AddScoped<GetAllPipelinesQuery>();
         services.AddScoped<GetPipelineByIdQuery>();

@@ -20,6 +20,8 @@ public sealed class AssignJobHandler(
 
         job.AssignTo(runner);
         runner.GoBusy();
+        await jobs.UpdateAsync(job, ct);
+        await runners.UpdateAsync(runner, ct);
         await eventDispatcher.DispatchAsync(job.DomainEvents, ct);
         job.ClearDomainEvents();
     }

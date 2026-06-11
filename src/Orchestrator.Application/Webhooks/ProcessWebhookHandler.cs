@@ -1,18 +1,30 @@
+using Microsoft.Extensions.Logging;
 using Orchestrator.Application.Common;
-using Orchestrator.Domain.Interfaces;
+using Orchestrator.Application.Builds;
 
 namespace Orchestrator.Application.Webhooks;
 
 public sealed class ProcessWebhookHandler(
-    IWebhookSignatureValidator signatureValidator,
-    IWebhookDispatcher webhookDispatcher
+    ICommandHandler<TriggerBuildCommand, Guid> triggerBuildHandler,
+    ILogger<ProcessWebhookHandler> logger
 ) : ICommandHandler<ProcessWebhookCommand>
 {
     public async Task HandleAsync(ProcessWebhookCommand command, CancellationToken ct = default)
     {
-        if (!signatureValidator.Validate(command.Payload, command.Signature, command.Secret))
-            throw new InvalidOperationException("Invalid webhook signature");
+        logger.LogInformation(
+            "Processing webhook triggering build for pipeline {PipelineId} on branch {Branch}", 
+            command.PipelineId, 
+            command.Branch
+        );
 
-        await webhookDispatcher.DispatchAsync(command.Payload, new { received = true });
+        var triggerCommand = new TriggerBuildCommand(
+            command.PipelineId,
+            command.EventType,
+            command.CommitSha,
+            command.Actor,
+            command.Branch
+        );
+
+        await triggerBuildHandler.HandleAsync(triggerCommand, ct);
     }
 }

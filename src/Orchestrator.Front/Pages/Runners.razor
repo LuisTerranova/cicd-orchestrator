@@ -1,0 +1,324 @@
+@page "/runners"
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject OrchestratorApiClient Api
+@inject IJSRuntime JS
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment Env
+
+<PageTitle>Runners - Orchestrator</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Build Runners</h1>
+        <p class="text-muted mb-0">Register, inspect, and monitor active runner agent nodes.</p>
+    </div>
+    <button class="btn btn-primary" @onclick="OpenRegisterModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>Register Runner</span>
+    </button>
+</div>
+
+@if (Loading)
+{
+    <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-3 text-muted">Retrieving runner statuses...</span>
+    </div>
+}
+else if (RunnerList is null || RunnerList.Length == 0)
+{
+    <div class="card py-5 text-center">
+        <div class="card-body">
+            <h5 class="text-muted">No runners registered</h5>
+            <p class="text-muted mb-3">Register a runner agent node to start compiling and executing jobs.</p>
+            <button class="btn btn-primary btn-sm" @onclick="OpenRegisterModal">Register your first runner</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Runner Name</th>
+                    <th>Status</th>
+                    <th>Associated Labels</th>
+                    <th>Last Heartbeat</th>
+                    <th>Uptime</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in RunnerList)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold">@r.Name</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">ID: @r.Id.ToString()[..8]</span>
+                            </div>
+                        </td>
+                        <td><StatusBadge Status="@r.Status" /></td>
+                        <td>
+                            @if (r.Labels is not null && r.Labels.Length > 0)
+                            {
+                                @foreach (var label in r.Labels)
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-muted border border-secondary border-opacity-25 me-1" style="font-size: 0.75rem; font-weight: 500;">
+                                        @label
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted font-italic" style="font-size: 0.8rem;">None</span>
+                            }
+                        </td>
+                        <td>@r.LastSeen.ToLocalTime().ToString("g")</td>
+                        <td>
+                            <span class="text-muted" style="font-size: 0.9rem;">
+                                @GetUptime(r.LastSeen)
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* REGISTER RUNNER MODAL DIALOG *@
+@if (ShowRegisterModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="mb-0">Register Build Runner</h5>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="CloseRegisterModal">✕</button>
+            </div>
+            
+            <div class="modal-body-custom">
+                @if (RegistrationResult == null)
+                {
+                    @* STEP 1: FILL FORM *@
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Runner Name</label>
+                        <input @bind="RegisterName" placeholder="e.g. worker-node-01" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Runner Labels (Comma-separated)</label>
+                        <input @bind="RegisterLabels" placeholder="e.g. docker, dotnet, linux" class="form-control" />
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">Labels determine which jobs can be assigned to this runner.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Global Registration Token</label>
+                        <input type="password" @bind="RegisterToken" placeholder="Enter registration token (e.g. dev-token)" class="form-control" />
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">Required to authorize the runner registration request with the server.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Operating System</label>
+                            <select @bind="RegisterOs" class="form-select">
+                                <option value="Linux">Linux</option>
+                                <option value="Windows">Windows</option>
+                                <option value="macOS">macOS</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">CPU Architecture</label>
+                            <select @bind="RegisterArch" class="form-select">
+                                <option value="X64">x86_64 (X64)</option>
+                                <option value="Arm64">ARM64</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Error))
+                    {
+                        <div class="text-danger mt-2" style="font-size: 0.85rem;">@Error</div>
+                    }
+                }
+                else
+                {
+                    @* STEP 2: SHOW RESULTS & CODE SNIPPET *@
+                    <div class="alert alert-success bg-success bg-opacity-10 text-success border border-success border-opacity-25 mb-4">
+                        <strong>Runner registered successfully!</strong> Keep this token secure, it won't be shown again.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Runner ID</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input class="form-control font-monospace" style="font-size: 0.85rem;" readonly value="@RegistrationResult.RunnerId.ToString()" />
+                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => CopyToClipboard(RegistrationResult.RunnerId.ToString(), "Id")'>
+                                @(CopiedTarget == "Id" ? "Copied" : "Copy")
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Secret Registration Token</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input class="form-control font-monospace" style="font-size: 0.85rem;" type="password" readonly value="@RegistrationResult.Secret" />
+                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => CopyToClipboard(RegistrationResult.Secret, "Token")'>
+                                @(CopiedTarget == "Token" ? "Copied" : "Copy")
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label text-muted">Startup Command Snippet</label>
+                        <div class="code-block-container mt-1">
+                            <button class="copy-btn" @onclick='() => CopyToClipboard(GetRunnerCommand(), "Cmd")'>
+                                @(CopiedTarget == "Cmd" ? "Copied!" : "Copy Command")
+                            </button>
+                            <span style="white-space: pre-wrap; font-size: 0.8rem; word-break: break-all;">@GetRunnerCommand()</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer-custom">
+                @if (RegistrationResult == null)
+                {
+                    <button class="btn btn-outline-secondary" @onclick="CloseRegisterModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="RegisterRunner" disabled="@Registering">
+                        @(Registering ? "Registering..." : "Register Node")
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-primary" @onclick="FinishRegistration">Done</button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool Loading = true;
+    private bool ShowRegisterModal;
+    private bool Registering;
+    private string? Error;
+
+    private string RegisterName = "";
+    private string RegisterLabels = "linux, dotnet";
+    private string RegisterOs = "Linux";
+    private string RegisterArch = "X64";
+    private string RegisterToken = "";
+
+    private RunnerResponse[]? RunnerList;
+    private RegisterRunnerResponse? RegistrationResult;
+    private string? CopiedTarget;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRunners();
+    }
+
+    private async Task LoadRunners()
+    {
+        Loading = true;
+        try
+        {
+            RunnerList = await Api.GetRunnersAsync(1, 100);
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private void OpenRegisterModal()
+    {
+        ShowRegisterModal = true;
+        RegistrationResult = null;
+        Error = null;
+        CopiedTarget = null;
+    }
+
+    private void CloseRegisterModal()
+    {
+        ShowRegisterModal = false;
+        Error = null;
+    }
+
+    private async Task RegisterRunner()
+    {
+        if (string.IsNullOrWhiteSpace(RegisterName))
+        {
+            Error = "Runner Name is required.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(RegisterToken))
+        {
+            Error = "Global Registration Token is required.";
+            return;
+        }
+
+        Registering = true;
+        Error = null;
+        try
+        {
+            var labelArray = RegisterLabels.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                           .Select(l => l.Trim())
+                                           .ToArray();
+
+            RegistrationResult = await Api.RegisterRunnerAsync(RegisterName, labelArray, RegisterOs, RegisterArch, RegisterToken);
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            Registering = false;
+        }
+    }
+
+    private async Task CopyToClipboard(string text, string targetName)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            CopiedTarget = targetName;
+            StateHasChanged();
+            await Task.Delay(2000);
+            if (CopiedTarget == targetName)
+            {
+                CopiedTarget = null;
+                StateHasChanged();
+            }
+        }
+        catch { }
+    }
+
+    private string GetRunnerCommand()
+    {
+        if (RegistrationResult == null) return "";
+        var serverUrl = Configuration.GetValue<string>("ApiBaseUrl") ?? "http://localhost:5000";
+        var labelStr = string.IsNullOrWhiteSpace(RegisterLabels) ? "" : $" --labels \"{RegisterLabels}\"";
+        return $"dotnet Orchestrator.Runner.dll --server-url {serverUrl} --runner-id {RegistrationResult.RunnerId} --runner-secret \"{RegistrationResult.Secret}\"{labelStr}";
+    }
+
+    private async Task FinishRegistration()
+    {
+        ShowRegisterModal = false;
+        RegistrationResult = null;
+        await LoadRunners();
+    }
+
+    private static string GetUptime(DateTime lastSeen)
+    {
+        var up = DateTime.UtcNow - lastSeen;
+        if (up.TotalMinutes < 1) return "just now";
+        if (up.TotalHours < 1) return $"{(int)up.TotalMinutes}m ago";
+        if (up.TotalDays < 1) return $"{(int)up.TotalHours}h ago";
+        return $"{(int)up.TotalDays}d ago";
+    }
+}

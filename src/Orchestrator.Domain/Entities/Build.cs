@@ -72,8 +72,12 @@ public class Build : Entity
 
     public void Cancel()
     {
+        if (Status != BuildStatus.Running && Status != BuildStatus.Queued)
+            throw new DomainException("Only running or queued builds can be cancelled.");
+
         Status = BuildStatus.Cancelled;
         CompletedAt = DateTime.UtcNow;
+        AddDomainEvent(new BuildCancelledEvent(Id));
     }
 
     public Job AddJob(string stageName)
@@ -81,5 +85,20 @@ public class Build : Entity
         var job = Job.Create(Id, stageName);
         _jobs.Add(job);
         return job;
+    }
+
+    public void AddJobs(IEnumerable<Job> jobs)
+    {
+        foreach (var job in jobs)
+            _jobs.Add(job);
+    }
+
+    public bool AllJobsTerminal()
+    {
+        return _jobs.Count > 0 && _jobs.All(j => j.Status is
+            JobStatus.Passed or
+            JobStatus.Failed or
+            JobStatus.Cancelled or
+            JobStatus.Skipped);
     }
 }

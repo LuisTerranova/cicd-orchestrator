@@ -1,16 +1,156 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+@if (!_initialized)
+{
+    <div class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Initializing Secure Connection...</div>
+    </div>
+}
+else if (!AuthService.IsAuthenticated)
+{
+    <div class="login-wrapper">
+        <div class="glow-bg"></div>
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="login-logo-svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+                <h2>Orchestrator Gatekeeper</h2>
+                <p>Provide administrative credentials to access the orchestrator control center.</p>
+            </div>
+            
+            <form @onsubmit="HandleLogin" class="login-form" @onsubmit:preventDefault>
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="error-alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="alert-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span>@_errorMessage</span>
+                    </div>
+                }
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Username</label>
+                    <div class="input-container">
+                        <input type="text" @bind="_username" class="form-control login-input" placeholder="Enter username (admin)" required autocomplete="username" />
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Password</label>
+                    <div class="input-container">
+                        <input type="password" @bind="_password" class="form-control login-input" placeholder="••••••••" required autocomplete="current-password" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 login-btn" disabled="@_loggingIn">
+                    @if (_loggingIn)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Authenticating Portal...</span>
+                    }
+                    else
+                    {
+                        <span>Authenticate Portal</span>
+                    }
+                </button>
+            </form>
+
+            <div class="login-seed-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="seed-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Development Credentials Seed: <code>admin</code> / <code>admin</code></span>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+        <main>
+            <div class="top-row px-4">
+                <span class="portal-brand">Orchestrator Control Center</span>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-success text-dark">System Online</span>
+                    <button class="btn btn-sm btn-outline-secondary logout-btn" @onclick="HandleLogout">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="btn-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+
+@code {
+    private bool _initialized;
+    private string _username = "";
+    private string _password = "";
+    private bool _loggingIn;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthService.OnAuthStateChanged += StateHasChanged;
+        await AuthService.InitializeAsync();
+        _initialized = true;
+    }
+
+    private async Task HandleLogin()
+    {
+        _loggingIn = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var success = await AuthService.LoginAsync(_username, _password);
+            if (!success)
+            {
+                _errorMessage = "Authentication failed. Please verify credentials.";
+            }
+            else
+            {
+                _password = ""; // Clear password input
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _loggingIn = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        NavigationManager.NavigateTo("");
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+    }
+}

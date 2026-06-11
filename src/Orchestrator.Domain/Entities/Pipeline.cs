@@ -8,6 +8,7 @@ public class Pipeline : Entity
     public string Repo { get; private set; } = string.Empty;
     public string Branch { get; private set; } = string.Empty;
     public string YamlPath { get; private set; } = string.Empty;
+    public string YamlContent { get; private set; } = string.Empty;
     public DateTime CreatedAt { get; private set; }
 
     private readonly List<Build> _builds = [];
@@ -50,4 +51,24 @@ public class Pipeline : Entity
         Branch = branch;
         YamlPath = yamlPath;
     }
+
+    public void UpdateDetails(string name, string repo, string branch, string yamlPath)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Pipeline name cannot be empty.");
+        if (string.IsNullOrWhiteSpace(repo))
+            throw new DomainException("Repo cannot be empty.");
+        Name = name;
+        Repo = repo;
+        Branch = branch ?? "main";
+        YamlPath = yamlPath ?? string.Empty;
+    }
+
+    public void UpdateYaml(string yamlContent)
+    {
+        if (string.IsNullOrWhiteSpace(yamlContent))
+            throw new DomainException("YAML content cannot be empty.");
+        YamlContent = yamlContent;
+    }
 }
+

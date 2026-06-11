@@ -28,6 +28,12 @@ public sealed class RunnerState
     // Creates per-job CancellationTokenSource so CancelJob can signal a specific job.
     public CancellationToken SetActiveJob(Guid jobId)
     {
+        // Dispose existing CTS if re-registering the same job ID
+        if (_jobCts.TryRemove(jobId, out var existing))
+        {
+            existing.Dispose();
+        }
+
         var cts = new CancellationTokenSource();
         _jobCts[jobId] = cts;
         return cts.Token;

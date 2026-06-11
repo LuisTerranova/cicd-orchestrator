@@ -1,0 +1,70 @@
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: docker/caddy/Dockerfile
+    ports:
+      - "8080:8080"
+      - "443:443"
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: .
+      dockerfile: src/Orchestrator.Api/Dockerfile
+    expose:
+      - "8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=orchestrator;Username=orchestrator;Password=dev123
+      - Auth__SecretKey=dev-secret-key-at-least-32-chars!!
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: orchestrator
+      POSTGRES_PASSWORD: dev123
+      POSTGRES_DB: orchestrator
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orchestrator"]
+      interval: 5s
+      retries: 5
+
+  rabbitmq:
+    build:
+      context: ./docker/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  runner:
+    build:
+      context: .
+      dockerfile: src/Orchestrator.Runner/Dockerfile
+    environment:
+      - RUNNER_SERVER_URL=http://server:8080
+      - RUNNER_REGISTRATION_TOKEN=dev-token
+      - RUNNER_LABELS=linux,podman,dotnet
+      - RUNNER_RABBITMQ_HOST=rabbitmq
+      - RUNNER_RABBITMQ_USER=guest
+      - RUNNER_RABBITMQ_PASS=guest
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
